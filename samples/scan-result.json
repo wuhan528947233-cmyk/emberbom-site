@@ -1,0 +1,253 @@
+{
+  "schema_version": "1.3.0",
+  "tool_version": "v0.1.0-rc.8",
+  "rule_version": "1",
+  "project": {
+    "name": "stm32-cmake",
+    "root": ".",
+    "revision": ""
+  },
+  "build": {
+    "system": "CMake",
+    "generator": "unknown",
+    "configuration": "unknown",
+    "toolchain": "GNU Arm",
+    "compile_database": "build/t046/compile_commands.json",
+    "linker_map": "build/t046/firmware.map",
+    "firmware": "unknown"
+  },
+  "inputs": {
+    "compile_database": {
+      "path": "build/t046/compile_commands.json",
+      "digest": "sha256:4eeeb17d75a71d7cee2953f53d02e97daa6e1609e93d78f166ee2ed7c354c9df"
+    },
+    "linker_map": {
+      "path": "build/t046/firmware.map",
+      "digest": "sha256:d6264eae4ddbc631bf7324b7a8d9e068eda686e4e7b1ed09d29df2c116f95e82"
+    }
+  },
+  "inventory": {
+    "source_files": [
+      "patches/mbedtls/local_policy_patch.c",
+      "src/main.c",
+      "src/startup.c",
+      "vendor/FreeRTOS-Kernel/list.c",
+      "vendor/mbedtls/library/version.c"
+    ],
+    "link_inputs": {
+      "objects": [
+        "build/t046/CMakeFiles/firmware.dir/src/main.c.obj",
+        "build/t046/CMakeFiles/firmware.dir/src/startup.c.obj"
+      ],
+      "archives": [
+        {
+          "path": "build/t046/libfreertos_kernel.a",
+          "members": [
+            "list.c.obj"
+          ]
+        },
+        {
+          "path": "build/t046/libmbedtls.a",
+          "members": [
+            "local_policy_patch.c.obj",
+            "version.c.obj"
+          ]
+        },
+        {
+          "path": "build/t046/libvendor.a",
+          "members": [
+            "vendor_blob.o"
+          ]
+        }
+      ]
+    }
+  },
+  "components": [
+    {
+      "id": "component:freertos-kernel",
+      "name": "FreeRTOS-Kernel",
+      "version": "V10.6.1",
+      "source_url": "https://github.com/FreeRTOS/FreeRTOS-Kernel",
+      "licenses": [
+        "MIT"
+      ],
+      "patched": false,
+      "status": "Confirmed",
+      "evidence": [
+        {
+          "type": "compile",
+          "path": "vendor/FreeRTOS-Kernel/list.c",
+          "detail": "source appears in compile_commands.json",
+          "digest": "sha256:4eeeb17d75a71d7cee2953f53d02e97daa6e1609e93d78f166ee2ed7c354c9df",
+          "build_config": "unknown"
+        },
+        {
+          "type": "link",
+          "path": "build/t046/libfreertos_kernel.a",
+          "detail": "archive members linked: list.c.obj",
+          "digest": "sha256:d6264eae4ddbc631bf7324b7a8d9e068eda686e4e7b1ed09d29df2c116f95e82",
+          "build_config": "unknown"
+        },
+        {
+          "type": "identity",
+          "path": "vendor/FreeRTOS-Kernel",
+          "detail": "git origin https://github.com/FreeRTOS/FreeRTOS-Kernel.git; commit 0264280230aa6a828247b5f05bf57e33f1994581; exact tag V10.6.1",
+          "digest": "",
+          "build_config": "unknown"
+        }
+      ],
+      "review": null
+    },
+    {
+      "id": "component:mbedtls",
+      "name": "mbedTLS",
+      "version": "mbedtls-3.5.1",
+      "source_url": "https://github.com/Mbed-TLS/mbedtls",
+      "licenses": [
+        "Apache-2.0"
+      ],
+      "patched": true,
+      "status": "NeedsReview",
+      "evidence": [
+        {
+          "type": "compile",
+          "path": "vendor/mbedtls/library/version.c",
+          "detail": "source appears in compile_commands.json",
+          "digest": "sha256:4eeeb17d75a71d7cee2953f53d02e97daa6e1609e93d78f166ee2ed7c354c9df",
+          "build_config": "unknown"
+        },
+        {
+          "type": "link",
+          "path": "build/t046/libmbedtls.a",
+          "detail": "archive members linked: local_policy_patch.c.obj, version.c.obj",
+          "digest": "sha256:d6264eae4ddbc631bf7324b7a8d9e068eda686e4e7b1ed09d29df2c116f95e82",
+          "build_config": "unknown"
+        },
+        {
+          "type": "patch",
+          "path": "patches/mbedtls/local_policy_patch.c",
+          "detail": "local patch source appears in compile_commands.json",
+          "digest": "sha256:4eeeb17d75a71d7cee2953f53d02e97daa6e1609e93d78f166ee2ed7c354c9df",
+          "build_config": "unknown"
+        },
+        {
+          "type": "identity",
+          "path": "vendor/mbedtls",
+          "detail": "git origin https://github.com/Mbed-TLS/mbedtls.git; commit edb8fec9882084344a314368ac7fd957a187519c; exact tag mbedtls-3.5.1",
+          "digest": "",
+          "build_config": "unknown"
+        }
+      ],
+      "review": null
+    }
+  ],
+  "unknown_inputs": [
+    {
+      "kind": "static_library",
+      "path": "build/t046/libvendor.a",
+      "archive": "libvendor.a",
+      "build_config": "unknown",
+      "evidence": [
+        {
+          "type": "link",
+          "path": "build/t046/firmware.map",
+          "detail": "archive members linked: vendor_blob.o",
+          "digest": "sha256:d6264eae4ddbc631bf7324b7a8d9e068eda686e4e7b1ed09d29df2c116f95e82",
+          "build_config": "unknown"
+        }
+      ]
+    }
+  ],
+  "unmatched_inputs": [
+    {
+      "kind": "object_file",
+      "path": "build/t046/CMakeFiles/firmware.dir/src/main.c.obj",
+      "archive": "",
+      "build_config": "unknown",
+      "evidence": [
+        {
+          "type": "link",
+          "path": "build/t046/firmware.map",
+          "detail": "linked object was not assigned to a dependency component",
+          "digest": "sha256:d6264eae4ddbc631bf7324b7a8d9e068eda686e4e7b1ed09d29df2c116f95e82",
+          "build_config": "unknown"
+        }
+      ]
+    },
+    {
+      "kind": "object_file",
+      "path": "build/t046/CMakeFiles/firmware.dir/src/startup.c.obj",
+      "archive": "",
+      "build_config": "unknown",
+      "evidence": [
+        {
+          "type": "link",
+          "path": "build/t046/firmware.map",
+          "detail": "linked object was not assigned to a dependency component",
+          "digest": "sha256:d6264eae4ddbc631bf7324b7a8d9e068eda686e4e7b1ed09d29df2c116f95e82",
+          "build_config": "unknown"
+        }
+      ]
+    },
+    {
+      "kind": "source_file",
+      "path": "src/main.c",
+      "archive": "",
+      "build_config": "unknown",
+      "evidence": [
+        {
+          "type": "compile",
+          "path": "src/main.c",
+          "detail": "compiled source was not assigned to a dependency component",
+          "digest": "sha256:4eeeb17d75a71d7cee2953f53d02e97daa6e1609e93d78f166ee2ed7c354c9df",
+          "build_config": "unknown"
+        }
+      ]
+    },
+    {
+      "kind": "source_file",
+      "path": "src/startup.c",
+      "archive": "",
+      "build_config": "unknown",
+      "evidence": [
+        {
+          "type": "compile",
+          "path": "src/startup.c",
+          "detail": "compiled source was not assigned to a dependency component",
+          "digest": "sha256:4eeeb17d75a71d7cee2953f53d02e97daa6e1609e93d78f166ee2ed7c354c9df",
+          "build_config": "unknown"
+        }
+      ]
+    }
+  ],
+  "excluded": [
+    {
+      "name": "FatFs",
+      "path": "vendor/FatFs",
+      "reason": "NotBuilt: no source appears in compile_commands.json",
+      "evidence": [
+        {
+          "type": "exclusion",
+          "path": "vendor/FatFs",
+          "detail": "source-tree candidate has no compile evidence",
+          "digest": "sha256:4eeeb17d75a71d7cee2953f53d02e97daa6e1609e93d78f166ee2ed7c354c9df",
+          "build_config": "unknown"
+        }
+      ]
+    },
+    {
+      "name": "opaque",
+      "path": "vendor/opaque",
+      "reason": "NotBuilt: no source appears in compile_commands.json",
+      "evidence": [
+        {
+          "type": "exclusion",
+          "path": "vendor/opaque",
+          "detail": "source-tree candidate has no compile evidence",
+          "digest": "sha256:4eeeb17d75a71d7cee2953f53d02e97daa6e1609e93d78f166ee2ed7c354c9df",
+          "build_config": "unknown"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,197 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>EmberBOM Scan Report - stm32-cmake</title>
+  <style>
+    :root { color-scheme: light; --ink:#172033; --muted:#667085; --line:#dfe3ea; --panel:#fff; --bg:#f4f6f9; --accent:#c4492d; }
+    * { box-sizing:border-box; }
+    body { margin:0; background:var(--bg); color:var(--ink); font:14px/1.55 system-ui,-apple-system,"Segoe UI",sans-serif; }
+    main { width:min(1160px,calc(100% - 32px)); margin:32px auto 64px; }
+    header { margin-bottom:24px; }
+    h1 { margin:0 0 6px; font-size:30px; letter-spacing:-.02em; }
+    h2 { margin:0 0 16px; font-size:20px; }
+    h3 { margin:0; font-size:16px; }
+    p { margin:0; }
+    .muted { color:var(--muted); }
+    .panel { margin:16px 0; padding:20px; border:1px solid var(--line); border-radius:12px; background:var(--panel); box-shadow:0 1px 2px rgba(16,24,40,.04); }
+    .facts,.summary { display:grid; gap:12px; }
+    .facts { grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); }
+    .fact span,.metric span { display:block; color:var(--muted); font-size:12px; }
+    .fact strong { overflow-wrap:anywhere; }
+    .summary { grid-template-columns:repeat(6,minmax(100px,1fr)); margin-top:16px; }
+    .metric { padding:14px; border-radius:10px; background:#f8fafc; }
+    .metric strong { display:block; font-size:24px; }
+    .findings { margin:0; padding-left:22px; }
+    .findings li + li { margin-top:6px; }
+    .section-head { display:flex; justify-content:space-between; align-items:baseline; gap:12px; }
+    table { width:100%; border-collapse:collapse; margin-top:12px; }
+    th,td { padding:11px 10px; border-bottom:1px solid var(--line); text-align:left; vertical-align:top; }
+    th { color:var(--muted); font-size:12px; font-weight:600; }
+    td { overflow-wrap:anywhere; }
+    .status { display:inline-block; padding:3px 8px; border-radius:999px; font-size:12px; font-weight:700; }
+    .confirmed { background:#e7f6ec; color:#16703a; }
+    .strong { background:#e8f1ff; color:#245ea8; }
+    .review { background:#fff2d8; color:#8a5700; }
+    .unknown { background:#f1f3f6; color:#4c5667; }
+    .tag { display:inline-block; margin-left:6px; padding:2px 7px; border:1px solid #efc1b6; border-radius:999px; color:#9c3a24; font-size:11px; }
+    details { border-top:1px solid var(--line); padding:13px 0; }
+    details:first-of-type { border-top:0; }
+    summary { cursor:pointer; font-weight:650; }
+    .detail-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:10px; margin:12px 0; }
+    .detail-grid div { padding:10px; background:#f8fafc; border-radius:8px; }
+    .detail-grid span { display:block; color:var(--muted); font-size:12px; }
+    .empty { padding:18px; border:1px dashed var(--line); border-radius:8px; color:var(--muted); text-align:center; }
+    footer { margin-top:24px; color:var(--muted); font-size:12px; text-align:center; }
+    @media (max-width:760px) { .summary { grid-template-columns:repeat(2,1fr); } .table-wrap { overflow-x:auto; } }
+    @media print { body { background:#fff; } main { width:100%; margin:0; } .panel { box-shadow:none; break-inside:avoid; } details { break-inside:avoid; } details > * { display:block; } }
+  </style>
+</head>
+<body>
+<main>
+  <header>
+    <h1>EmberBOM Scan Report</h1>
+    <p class="muted">Offline build evidence summary; this report does not provide legal or compliance conclusions.</p>
+  </header>
+
+  <section class="panel" aria-labelledby="summary-title">
+    <h2 id="summary-title">Project Summary</h2>
+    <div class="facts">
+      <div class="fact"><span>Project</span><strong>stm32-cmake</strong></div>
+      <div class="fact"><span>Build Configuration</span><strong>unknown</strong></div>
+      <div class="fact"><span>Firmware</span><strong>unknown</strong></div>
+      <div class="fact"><span>Tool / Rules</span><strong>v0.1.0-rc.8 / 1</strong></div>
+    </div>
+    <div class="summary">
+      <div class="metric"><span>Confirmed</span><strong>1</strong></div>
+      <div class="metric"><span>Strong</span><strong>0</strong></div>
+      <div class="metric"><span>Needs Review</span><strong>1</strong></div>
+      <div class="metric"><span>Unknown Build Inputs</span><strong>1</strong></div>
+      <div class="metric"><span>Unmatched Build Inputs</span><strong>4</strong></div>
+      <div class="metric"><span>Candidates Not in This Build</span><strong>2</strong></div>
+    </div>
+  </section>
+
+  <section class="panel" aria-labelledby="findings-title">
+    <h2 id="findings-title">Findings Summary</h2>
+    <ul class="findings"><li>FreeRTOS-Kernel was confirmed in this firmware build.</li><li>mbedTLS was included with local changes and needs review.</li><li>libvendor.a participated in the build but could not be identified.</li><li>build/t046/CMakeFiles/firmware.dir/src/main.c.obj participated in the build but was not assigned to a dependency component.</li><li>build/t046/CMakeFiles/firmware.dir/src/startup.c.obj participated in the build but was not assigned to a dependency component.</li><li>src/main.c participated in the build but was not assigned to a dependency component.</li><li>src/startup.c participated in the build but was not assigned to a dependency component.</li><li>FatFs exists in the source tree but was not part of this build.</li><li>opaque exists in the source tree but was not part of this build.</li></ul>
+  </section>
+
+  <section class="panel" aria-labelledby="components-title">
+    <div class="section-head"><h2 id="components-title">Components</h2><span class="muted">2 items</span></div>
+    <p class="muted">Confirmed: component identity is supported by build evidence. Strong: build evidence is strong, but confirmation may still be needed. NeedsReview: local changes or incomplete identity require review. Unknown: the build input could not be identified reliably.</p>
+    
+    <div class="table-wrap"><table>
+      <thead><tr><th>Status</th><th>Component</th><th>Version</th><th>Licenses</th><th>Evidence</th></tr></thead>
+      <tbody><tr>
+        <td><span class="status confirmed">Confirmed</span></td>
+        <td>FreeRTOS-Kernel</td><td>V10.6.1</td><td>MIT</td><td>3 items</td>
+      </tr><tr>
+        <td><span class="status review">NeedsReview</span></td>
+        <td>mbedTLS</td><td>mbedtls-3.5.1</td><td>Apache-2.0</td><td>4 items</td>
+      </tr></tbody>
+    </table></div>
+    <div><details>
+      <summary>FreeRTOS-Kernel · Confirmed</summary>
+      <div class="detail-grid">
+        <div><span>Stable ID</span>component:freertos-kernel</div><div><span>Source</span>https://github.com/FreeRTOS/FreeRTOS-Kernel</div>
+        <div><span>Locally Modified</span>No</div><div><span>Review Note</span></div>
+      </div>
+      <div class="table-wrap"><table>
+        <thead><tr><th>Type</th><th>Path</th><th>Details</th><th>Build Configuration</th></tr></thead>
+        <tbody><tr><td>compile</td><td>vendor/FreeRTOS-Kernel/list.c</td><td>source appears in compile_commands.json</td><td>unknown</td></tr><tr><td>identity</td><td>vendor/FreeRTOS-Kernel</td><td>git origin https://github.com/FreeRTOS/FreeRTOS-Kernel.git; commit 0264280230aa6a828247b5f05bf57e33f1994581; exact tag V10.6.1</td><td>unknown</td></tr><tr><td>link</td><td>build/t046/libfreertos_kernel.a</td><td>archive members linked: list.c.obj</td><td>unknown</td></tr></tbody>
+      </table></div>
+    </details><details>
+      <summary>mbedTLS · NeedsReview</summary>
+      <div class="detail-grid">
+        <div><span>Stable ID</span>component:mbedtls</div><div><span>Source</span>https://github.com/Mbed-TLS/mbedtls</div>
+        <div><span>Locally Modified</span>Yes</div><div><span>Review Note</span></div>
+      </div>
+      <div class="table-wrap"><table>
+        <thead><tr><th>Type</th><th>Path</th><th>Details</th><th>Build Configuration</th></tr></thead>
+        <tbody><tr><td>compile</td><td>vendor/mbedtls/library/version.c</td><td>source appears in compile_commands.json</td><td>unknown</td></tr><tr><td>identity</td><td>vendor/mbedtls</td><td>git origin https://github.com/Mbed-TLS/mbedtls.git; commit edb8fec9882084344a314368ac7fd957a187519c; exact tag mbedtls-3.5.1</td><td>unknown</td></tr><tr><td>link</td><td>build/t046/libmbedtls.a</td><td>archive members linked: local_policy_patch.c.obj, version.c.obj</td><td>unknown</td></tr><tr><td>patch</td><td>patches/mbedtls/local_policy_patch.c</td><td>local patch source appears in compile_commands.json</td><td>unknown</td></tr></tbody>
+      </table></div>
+    </details></div>
+    
+  </section>
+
+  <section class="panel" aria-labelledby="unknown-title">
+    <div class="section-head"><h2 id="unknown-title">Unknown Build Inputs</h2><span class="muted">1 item</span></div>
+    <p class="muted">These objects participated in the build, but their component identity could not be determined reliably.</p>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Type</th><th>Path</th><th>Static Library</th><th>Build Configuration</th><th>Evidence</th></tr></thead>
+      <tbody><tr><td>static_library</td><td>build/t046/libvendor.a</td><td>libvendor.a</td><td>unknown</td><td>1 item</td></tr></tbody>
+    </table></div>
+    <div><details>
+      <summary>libvendor.a build/t046/libvendor.a · Build Evidence</summary>
+      <div class="table-wrap"><table>
+        <thead><tr><th>Type</th><th>Path</th><th>Details</th><th>Build Configuration</th></tr></thead>
+        <tbody><tr><td>link</td><td>build/t046/firmware.map</td><td>archive members linked: vendor_blob.o</td><td>unknown</td></tr></tbody>
+      </table></div>
+    </details></div>
+    
+  </section>
+
+  <section class="panel" aria-labelledby="unmatched-title">
+    <div class="section-head"><h2 id="unmatched-title">Unmatched Build Inputs</h2><span class="muted">4 items</span></div>
+    <p class="muted">These compiled sources or linked objects were not assigned to a dependency component. They may be project code or dependencies that need review.</p>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Type</th><th>Path</th><th>Build Configuration</th><th>Evidence</th></tr></thead>
+      <tbody><tr><td>object_file</td><td>build/t046/CMakeFiles/firmware.dir/src/main.c.obj</td><td>unknown</td><td>1 item</td></tr><tr><td>object_file</td><td>build/t046/CMakeFiles/firmware.dir/src/startup.c.obj</td><td>unknown</td><td>1 item</td></tr><tr><td>source_file</td><td>src/main.c</td><td>unknown</td><td>1 item</td></tr><tr><td>source_file</td><td>src/startup.c</td><td>unknown</td><td>1 item</td></tr></tbody>
+    </table></div>
+    <div><details>
+      <summary>build/t046/CMakeFiles/firmware.dir/src/main.c.obj · Build Evidence</summary>
+      <div class="table-wrap"><table>
+        <thead><tr><th>Type</th><th>Path</th><th>Details</th><th>Build Configuration</th></tr></thead>
+        <tbody><tr><td>link</td><td>build/t046/firmware.map</td><td>linked object was not assigned to a dependency component</td><td>unknown</td></tr></tbody>
+      </table></div>
+    </details><details>
+      <summary>build/t046/CMakeFiles/firmware.dir/src/startup.c.obj · Build Evidence</summary>
+      <div class="table-wrap"><table>
+        <thead><tr><th>Type</th><th>Path</th><th>Details</th><th>Build Configuration</th></tr></thead>
+        <tbody><tr><td>link</td><td>build/t046/firmware.map</td><td>linked object was not assigned to a dependency component</td><td>unknown</td></tr></tbody>
+      </table></div>
+    </details><details>
+      <summary>src/main.c · Build Evidence</summary>
+      <div class="table-wrap"><table>
+        <thead><tr><th>Type</th><th>Path</th><th>Details</th><th>Build Configuration</th></tr></thead>
+        <tbody><tr><td>compile</td><td>src/main.c</td><td>compiled source was not assigned to a dependency component</td><td>unknown</td></tr></tbody>
+      </table></div>
+    </details><details>
+      <summary>src/startup.c · Build Evidence</summary>
+      <div class="table-wrap"><table>
+        <thead><tr><th>Type</th><th>Path</th><th>Details</th><th>Build Configuration</th></tr></thead>
+        <tbody><tr><td>compile</td><td>src/startup.c</td><td>compiled source was not assigned to a dependency component</td><td>unknown</td></tr></tbody>
+      </table></div>
+    </details></div>
+    
+  </section>
+
+  <section class="panel" aria-labelledby="excluded-title">
+    <div class="section-head"><h2 id="excluded-title">Candidates Not in This Build</h2><span class="muted">2 items</span></div>
+    <p class="muted">These candidates exist in the source tree but have no evidence from this build, so they are not included in the SBOM.</p>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Candidate</th><th>Path</th><th>Exclusion Reason</th><th>Evidence</th></tr></thead>
+      <tbody><tr><td>FatFs</td><td>vendor/FatFs</td><td>NotBuilt: no source appears in compile_commands.json</td><td>1 item</td></tr><tr><td>opaque</td><td>vendor/opaque</td><td>NotBuilt: no source appears in compile_commands.json</td><td>1 item</td></tr></tbody>
+    </table></div>
+    <div><details>
+      <summary>FatFs · Exclusion Evidence</summary>
+      <div class="table-wrap"><table>
+        <thead><tr><th>Type</th><th>Path</th><th>Details</th><th>Build Configuration</th></tr></thead>
+        <tbody><tr><td>exclusion</td><td>vendor/FatFs</td><td>source-tree candidate has no compile evidence</td><td>unknown</td></tr></tbody>
+      </table></div>
+    </details><details>
+      <summary>opaque · Exclusion Evidence</summary>
+      <div class="table-wrap"><table>
+        <thead><tr><th>Type</th><th>Path</th><th>Details</th><th>Build Configuration</th></tr></thead>
+        <tbody><tr><td>exclusion</td><td>vendor/opaque</td><td>source-tree candidate has no compile evidence</td><td>unknown</td></tr></tbody>
+      </table></div>
+    </details></div>
+    
+  </section>
+
+  <footer>Generated by EmberBOM v0.1.0-rc.8 · Fully offline · No external asset dependencies</footer>
+</main>
+</body>
+</html>

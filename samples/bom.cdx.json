@@ -1,0 +1,128 @@
+{
+  "$schema": "http://cyclonedx.org/schema/bom-1.6.schema.json",
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "version": 1,
+  "metadata": {
+    "tools": {
+      "components": [
+        {
+          "type": "application",
+          "name": "emberbom",
+          "version": "v0.1.0-rc.8"
+        }
+      ]
+    },
+    "component": {
+      "bom-ref": "emberbom:project",
+      "type": "firmware",
+      "name": "stm32-cmake"
+    }
+  },
+  "components": [
+    {
+      "bom-ref": "component:freertos-kernel",
+      "type": "library",
+      "name": "FreeRTOS-Kernel",
+      "version": "V10.6.1",
+      "licenses": [
+        {
+          "license": {
+            "name": "MIT"
+          }
+        }
+      ],
+      "externalReferences": [
+        {
+          "url": "https://github.com/FreeRTOS/FreeRTOS-Kernel",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "emberbom:component:evidence",
+          "value": "[{\"type\":\"compile\",\"path\":\"vendor/FreeRTOS-Kernel/list.c\",\"detail\":\"source appears in compile_commands.json\",\"digest\":\"sha256:4eeeb17d75a71d7cee2953f53d02e97daa6e1609e93d78f166ee2ed7c354c9df\",\"build_config\":\"unknown\"},{\"type\":\"identity\",\"path\":\"vendor/FreeRTOS-Kernel\",\"detail\":\"git origin https://github.com/FreeRTOS/FreeRTOS-Kernel.git; commit 0264280230aa6a828247b5f05bf57e33f1994581; exact tag V10.6.1\",\"digest\":\"\",\"build_config\":\"unknown\"},{\"type\":\"link\",\"path\":\"build/t046/libfreertos_kernel.a\",\"detail\":\"archive members linked: list.c.obj\",\"digest\":\"sha256:d6264eae4ddbc631bf7324b7a8d9e068eda686e4e7b1ed09d29df2c116f95e82\",\"build_config\":\"unknown\"}]"
+        },
+        {
+          "name": "emberbom:component:machine-declaration",
+          "value": "{\"name\":\"FreeRTOS-Kernel\",\"version\":\"V10.6.1\",\"licenses\":[\"MIT\"],\"patched\":false,\"status\":\"Confirmed\"}"
+        },
+        {
+          "name": "emberbom:component:patched",
+          "value": "false"
+        },
+        {
+          "name": "emberbom:component:source-url",
+          "value": "https://github.com/FreeRTOS/FreeRTOS-Kernel"
+        },
+        {
+          "name": "emberbom:component:status",
+          "value": "Confirmed"
+        }
+      ]
+    },
+    {
+      "bom-ref": "component:mbedtls",
+      "type": "library",
+      "name": "mbedTLS",
+      "version": "mbedtls-3.5.1",
+      "licenses": [
+        {
+          "license": {
+            "name": "Apache-2.0"
+          }
+        }
+      ],
+      "externalReferences": [
+        {
+          "url": "https://github.com/Mbed-TLS/mbedtls",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "emberbom:component:evidence",
+          "value": "[{\"type\":\"compile\",\"path\":\"vendor/mbedtls/library/version.c\",\"detail\":\"source appears in compile_commands.json\",\"digest\":\"sha256:4eeeb17d75a71d7cee2953f53d02e97daa6e1609e93d78f166ee2ed7c354c9df\",\"build_config\":\"unknown\"},{\"type\":\"identity\",\"path\":\"vendor/mbedtls\",\"detail\":\"git origin https://github.com/Mbed-TLS/mbedtls.git; commit edb8fec9882084344a314368ac7fd957a187519c; exact tag mbedtls-3.5.1\",\"digest\":\"\",\"build_config\":\"unknown\"},{\"type\":\"link\",\"path\":\"build/t046/libmbedtls.a\",\"detail\":\"archive members linked: local_policy_patch.c.obj, version.c.obj\",\"digest\":\"sha256:d6264eae4ddbc631bf7324b7a8d9e068eda686e4e7b1ed09d29df2c116f95e82\",\"build_config\":\"unknown\"},{\"type\":\"patch\",\"path\":\"patches/mbedtls/local_policy_patch.c\",\"detail\":\"local patch source appears in compile_commands.json\",\"digest\":\"sha256:4eeeb17d75a71d7cee2953f53d02e97daa6e1609e93d78f166ee2ed7c354c9df\",\"build_config\":\"unknown\"}]"
+        },
+        {
+          "name": "emberbom:component:machine-declaration",
+          "value": "{\"name\":\"mbedTLS\",\"version\":\"mbedtls-3.5.1\",\"licenses\":[\"Apache-2.0\"],\"patched\":true,\"status\":\"NeedsReview\"}"
+        },
+        {
+          "name": "emberbom:component:patched",
+          "value": "true"
+        },
+        {
+          "name": "emberbom:component:source-url",
+          "value": "https://github.com/Mbed-TLS/mbedtls"
+        },
+        {
+          "name": "emberbom:component:status",
+          "value": "NeedsReview"
+        }
+      ]
+    }
+  ],
+  "properties": [
+    {
+      "name": "emberbom:scan:build",
+      "value": "{\"system\":\"CMake\",\"generator\":\"unknown\",\"configuration\":\"unknown\",\"toolchain\":\"GNU Arm\",\"compile_database\":\"build/t046/compile_commands.json\",\"linker_map\":\"build/t046/firmware.map\",\"firmware\":\"unknown\"}"
+    },
+    {
+      "name": "emberbom:scan:excluded",
+      "value": "[{\"name\":\"FatFs\",\"path\":\"vendor/FatFs\",\"reason\":\"NotBuilt: no source appears in compile_commands.json\",\"evidence\":[{\"type\":\"exclusion\",\"path\":\"vendor/FatFs\",\"detail\":\"source-tree candidate has no compile evidence\",\"digest\":\"sha256:4eeeb17d75a71d7cee2953f53d02e97daa6e1609e93d78f166ee2ed7c354c9df\",\"build_config\":\"unknown\"}]},{\"name\":\"opaque\",\"path\":\"vendor/opaque\",\"reason\":\"NotBuilt: no source appears in compile_commands.json\",\"evidence\":[{\"type\":\"exclusion\",\"path\":\"vendor/opaque\",\"detail\":\"source-tree candidate has no compile evidence\",\"digest\":\"sha256:4eeeb17d75a71d7cee2953f53d02e97daa6e1609e93d78f166ee2ed7c354c9df\",\"build_config\":\"unknown\"}]}]"
+    },
+    {
+      "name": "emberbom:scan:inputs",
+      "value": "{\"compile_database\":{\"path\":\"build/t046/compile_commands.json\",\"digest\":\"sha256:4eeeb17d75a71d7cee2953f53d02e97daa6e1609e93d78f166ee2ed7c354c9df\"},\"linker_map\":{\"path\":\"build/t046/firmware.map\",\"digest\":\"sha256:d6264eae4ddbc631bf7324b7a8d9e068eda686e4e7b1ed09d29df2c116f95e82\"}}"
+    },
+    {
+      "name": "emberbom:scan:rule-version",
+      "value": "1"
+    },
+    {
+      "name": "emberbom:scan:unknown-inputs",
+      "value": "[{\"kind\":\"static_library\",\"path\":\"build/t046/libvendor.a\",\"archive\":\"libvendor.a\",\"build_config\":\"unknown\",\"evidence\":[{\"type\":\"link\",\"path\":\"build/t046/firmware.map\",\"detail\":\"archive members linked: vendor_blob.o\",\"digest\":\"sha256:d6264eae4ddbc631bf7324b7a8d9e068eda686e4e7b1ed09d29df2c116f95e82\",\"build_config\":\"unknown\"}]}]"
+    }
+  ]
+}
