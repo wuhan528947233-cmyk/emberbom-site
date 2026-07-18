@@ -1,0 +1,272 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="description" content="Install EmberBOM, verify the release, run a first STM32 scan, and interpret the output.">
+  <title>Installation and quick start ? EmberBOM</title>
+  <link rel="canonical" href="https://emberbom.com/quick-start.html">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <main class="legal docs">
+    <a class="back" href="index.html">&larr; Back to EmberBOM</a>
+    <h1>Installation, Quick Start, and Troubleshooting</h1>
+<p>This guide is for first-time EmberBOM users on Windows and Linux. The current public evaluation release is <code>v0.1.0-rc.9</code>. It supports only build evidence produced for STM32 projects using CMake and the GNU Arm toolchain.</p>
+<p>EmberBOM is shell-neutral: it is a normal command-line executable and does not require PowerShell. PowerShell and Bash are used below only to provide copyable examples for Windows and Linux.</p>
+<h2>1. What EmberBOM Installs</h2>
+<p>The EmberBOM CLI is a single executable. It does not install a database, background service, AI model, or system driver, and it does not require Go, Python, administrator privileges, or root access. The release archive also contains the proprietary license notice, third-party notices, security policy, and original license files for locked dependencies. Those documents are not additional runtime dependencies.</p>
+<p>EmberBOM does not need network access or rerun the compiler when it scans existing build evidence. CMake, Ninja, and the GNU Arm toolchain are required only when you need to regenerate project build evidence.</p>
+<h2>2. Download the Release Files</h2>
+<p>Download the archive and matching checksum file for your operating system from the official EmberBOM website:</p>
+<table>
+<thead>
+<tr>
+<th>System</th>
+<th>Archive</th>
+<th>Checksum file</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Windows x64</td>
+<td><a href="downloads/emberbom_v0.1.0-rc.9_windows_amd64.zip">Download ZIP</a></td>
+<td><a href="downloads/emberbom_v0.1.0-rc.9_windows_amd64.zip.sha256">Download SHA-256</a></td>
+</tr>
+<tr>
+<td>Linux x64</td>
+<td><a href="downloads/emberbom_v0.1.0-rc.9_linux_amd64.tar.gz">Download tar.gz</a></td>
+<td><a href="downloads/emberbom_v0.1.0-rc.9_linux_amd64.tar.gz.sha256">Download SHA-256</a></td>
+</tr>
+</tbody></table>
+<p>Use only <code>https://emberbom.com</code> as the public download source. Do not obtain the executable from chat attachments, file-sharing services, source-repository links, or unknown mirrors. Verify the checksum before extracting the archive. You may also check both platform archives with <a href="downloads/SHA256SUMS.txt">SHA256SUMS.txt</a>.</p>
+<h2>3. Windows Installation</h2>
+<p>Place the archive and checksum file in the same folder. Open that folder in File Explorer, type <code>powershell</code> in the address bar, and press Enter. Paste the complete block below once. It fails closed: installation stops if either file is missing, the checksum file is malformed, or the hashes differ.</p>
+<pre><code class="language-powershell">&amp; {
+    $ErrorActionPreference = &quot;Stop&quot;
+    Set-StrictMode -Version Latest
+    $Archive = Join-Path (Get-Location).Path &quot;emberbom_v0.1.0-rc.9_windows_amd64.zip&quot;
+    $Checksum = &quot;$Archive.sha256&quot;
+    if (-not (Test-Path -LiteralPath $Archive -PathType Leaf)) { throw &quot;Archive file not found. STOP.&quot; }
+    if (-not (Test-Path -LiteralPath $Checksum -PathType Leaf)) { throw &quot;SHA256 file not found. STOP.&quot; }
+    $ChecksumText = ([string](Get-Content -LiteralPath $Checksum -Raw)).Trim()
+    if ($ChecksumText -notmatch &#39;^(?&lt;hash&gt;[0-9a-fA-F]{64})(?:\s|$)&#39;) { throw &quot;SHA256 file is empty or malformed. STOP.&quot; }
+    $Expected = $Matches.hash.ToLowerInvariant()
+    $Actual = (Get-FileHash -LiteralPath $Archive -Algorithm SHA256).Hash.ToLowerInvariant()
+    if ($Actual -ne $Expected) { throw &quot;Checksum mismatch. STOP.&quot; }
+    Write-Output &quot;CHECKSUM=PASS&quot;
+
+    $InstallDir = Join-Path $env:LOCALAPPDATA &quot;Programs\EmberBOM&quot;
+    New-Item -ItemType Directory -Force -Path $InstallDir | Out-Null
+    Expand-Archive -LiteralPath $Archive -DestinationPath $InstallDir -Force
+    $EmberBOM = Join-Path $InstallDir &quot;emberbom.exe&quot;
+    if (-not (Test-Path -LiteralPath $EmberBOM -PathType Leaf)) { throw &quot;emberbom.exe not found after extraction. STOP.&quot; }
+    &amp; $EmberBOM version
+    if ($LASTEXITCODE -ne 0) { throw &quot;emberbom version command failed. STOP.&quot; }
+}
+</code></pre>
+<p>The output must include <code>CHECKSUM=PASS</code>, and the final line must be:</p>
+<pre><code class="language-text">emberbom v0.1.0-rc.9
+</code></pre>
+<p>Choose one of the following command-discovery options. None requires administrator privileges.</p>
+<h3>Option A: Use EmberBOM in the Current PowerShell Window</h3>
+<p>Use this when you want to scan immediately without making a permanent change. It applies only to the current PowerShell window. If you close that window, repeat these three lines before typing <code>emberbom</code> again:</p>
+<pre><code class="language-powershell">$InstallDir = Join-Path $env:LOCALAPPDATA &quot;Programs\EmberBOM&quot;
+$env:Path = &quot;$InstallDir;$env:Path&quot;
+emberbom version
+</code></pre>
+<h3>Option B: Make EmberBOM Available in New PowerShell Windows</h3>
+<p>Use this optional user-level PATH change if you want to type <code>emberbom</code> after reopening PowerShell. It changes only your Windows user account, not the system PATH. Run the block once, then close PowerShell, open a new PowerShell window, and run <code>emberbom version</code>.</p>
+<pre><code class="language-powershell">&amp; {
+    $InstallDir = Join-Path $env:LOCALAPPDATA &quot;Programs\EmberBOM&quot;
+    $UserPath = [Environment]::GetEnvironmentVariable(&quot;Path&quot;, &quot;User&quot;)
+    $UserEntries = @($UserPath -split &quot;;&quot; | Where-Object { -not [string]::IsNullOrWhiteSpace($_) })
+    if ($UserEntries -notcontains $InstallDir) {
+        $UpdatedUserPath = (@($UserEntries) + $InstallDir) -join &quot;;&quot;
+        [Environment]::SetEnvironmentVariable(&quot;Path&quot;, $UpdatedUserPath, &quot;User&quot;)
+    }
+    Write-Output &quot;USER_PATH=READY&quot;
+}
+</code></pre>
+<p>The new PATH value is read when a new terminal starts. Seeing <code>USER_PATH=READY</code> does not make an already-open second terminal refresh itself. In the new window, this command must print the EmberBOM version:</p>
+<pre><code class="language-powershell">emberbom version
+</code></pre>
+<h3>Option C: Use the Full Executable Path Without Changing PATH</h3>
+<p>Use this if your organization does not allow PATH changes. This works in any PowerShell window after extraction:</p>
+<pre><code class="language-powershell">$EmberBOM = Join-Path $env:LOCALAPPDATA &quot;Programs\EmberBOM\emberbom.exe&quot;
+&amp; $EmberBOM version
+</code></pre>
+<p>For later commands, replace the leading <code>emberbom</code> shown in this guide with <code>&amp; $EmberBOM</code>. For example: <code>&amp; $EmberBOM scan ...</code>.</p>
+<h2>4. Linux Installation</h2>
+<p>The following commands assume that the archive and checksum file are in the current terminal directory:</p>
+<pre><code class="language-bash">sha256sum --check emberbom_v0.1.0-rc.9_linux_amd64.tar.gz.sha256
+install_root=&quot;$HOME/.local/share/emberbom/v0.1.0-rc.9&quot;
+mkdir -p &quot;$install_root&quot; &quot;$HOME/.local/bin&quot;
+tar -xzf emberbom_v0.1.0-rc.9_linux_amd64.tar.gz -C &quot;$install_root&quot;
+install -m 0755 &quot;$install_root/emberbom&quot; &quot;$HOME/.local/bin/emberbom&quot;
+&quot;$HOME/.local/bin/emberbom&quot; version
+</code></pre>
+<p>The final line must be:</p>
+<pre><code class="language-text">emberbom v0.1.0-rc.9
+</code></pre>
+<p>The following change applies only to the current terminal session:</p>
+<pre><code class="language-bash">export PATH=&quot;$HOME/.local/bin:$PATH&quot;
+emberbom version
+</code></pre>
+<h2>5. Required Build Evidence</h2>
+<p>Every scan requires four explicit locations:</p>
+<ol>
+<li>the STM32 project directory;</li>
+<li>the CMake build directory;</li>
+<li><code>compile_commands.json</code> in that build directory;</li>
+<li>the GNU linker map file, such as <code>firmware.map</code>.</li>
+</ol>
+<p>If the compile database is missing, configure CMake again with:</p>
+<pre><code class="language-text">-DCMAKE_EXPORT_COMPILE_COMMANDS=ON
+</code></pre>
+<p>If the map file is missing, configure the GNU linker to use <code>-Wl,-Map=&lt;file-name&gt;</code> while linking the firmware. EmberBOM does not guess or fabricate missing build evidence.</p>
+<h2>6. First Scan</h2>
+<p>Open a terminal in the directory that contains your project folder. The examples below assume the project folder is named <code>my-firmware</code>, its existing CMake build directory is <code>my-firmware/build</code>, and the output will be written beside the project rather than inside it.</p>
+<p>Windows PowerShell example using relative paths:</p>
+<pre><code class="language-powershell">emberbom scan `
+  --project &quot;.\my-firmware&quot; `
+  --build &quot;.\my-firmware\build&quot; `
+  --map &quot;.\my-firmware\build\firmware.map&quot; `
+  --out &quot;.\emberbom-output&quot;
+</code></pre>
+<p>Linux example using relative paths:</p>
+<pre><code class="language-bash">emberbom scan \
+  --project &quot;./my-firmware&quot; \
+  --build &quot;./my-firmware/build&quot; \
+  --map &quot;./my-firmware/build/firmware.map&quot; \
+  --out &quot;./emberbom-output&quot;
+</code></pre>
+<p>Relative and absolute paths are both supported. Keep the output directory outside the source project so generated reports never become source inputs or modify the project tree. If your build directory or map file has another name, replace only those example paths; do not move build artifacts solely for EmberBOM.</p>
+<p>After a successful scan, the output directory contains:</p>
+<ul>
+<li><code>scan-result.json</code>: the machine-readable scan result and evidence;</li>
+<li><code>bom.cdx.json</code>: the CycloneDX 1.6 SBOM;</li>
+<li><code>scan-report.html</code>: the self-contained offline report that opens in a browser.</li>
+</ul>
+<p>The release acceptance fixture reports FreeRTOS, patched mbedTLS as <code>NeedsReview</code>, the unknown <code>libvendor.a</code>, and FatFS as a candidate not included in the build.</p>
+<h3>Open and Read the Report</h3>
+<p>Open <code>scan-report.html</code> in a browser. The file is self-contained and does not need a web server or network connection. On Windows, double-click it in File Explorer. On Linux desktops, open it with the normal file manager or run <code>xdg-open ./emberbom-output/scan-report.html</code> when <code>xdg-open</code> is available.</p>
+<p>Read the report in this order:</p>
+<ol>
+<li><strong>Findings Summary</strong> states the important results in plain English.</li>
+<li><strong>Confirmed</strong> means component identity is supported by the available build evidence.</li>
+<li><strong>Strong</strong> means the build evidence is strong, but a human may still need to confirm identity or metadata.</li>
+<li><strong>NeedsReview</strong> means local changes or incomplete identity require a human decision before the result should be treated as final.</li>
+<li><strong>Unknown Build Inputs</strong> participated in the firmware build but could not be identified reliably. Investigate these before distributing an SBOM as complete.</li>
+<li><strong>Candidates Not in This Build</strong> exist in the source tree but have no evidence from this build and therefore are not included in the SBOM.</li>
+</ol>
+<p>Expand an item to see the compile, link, patch, or exclusion evidence that produced its result. Do not change a status merely to make the report look cleaner; use a review YAML only when you have independent evidence for the component identity and metadata.</p>
+<h2>7. Create and Apply a Review YAML File</h2>
+<p>Create a minimal template. Existing files are never overwritten:</p>
+<pre><code class="language-text">emberbom review init --out emberbom-review.yaml
+</code></pre>
+<p>The initial file is:</p>
+<pre><code class="language-yaml">schema_version: 1
+components: []
+</code></pre>
+<p>Edit the file only after obtaining a stable component ID from <code>scan-result.json</code>. For example, to confirm the fixture&#39;s mbedTLS component:</p>
+<pre><code class="language-yaml">schema_version: 1
+components:
+  - id: component:mbedtls
+    status: Confirmed
+    name: mbedTLS
+    version: 3.6.1-local
+    licenses:
+      - Apache-2.0
+    patched: true
+    note: Reviewed the local patch against the release baseline.
+</code></pre>
+<p>Keep the first scan result and write the reviewed scan to a new output directory:</p>
+<pre><code class="language-text">emberbom scan --project &lt;project-directory&gt; --build &lt;build-directory&gt; --map &lt;map-file&gt; --out &lt;new-output-directory&gt; --review emberbom-review.yaml
+</code></pre>
+<p>A manual review overlays declared fields only; it does not remove the original machine evidence. Do not guess versions, licenses, or patched status.</p>
+<h2>8. Common Errors</h2>
+<table>
+<thead>
+<tr>
+<th>Error code</th>
+<th>Meaning</th>
+<th>Action</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>project_required</code> / <code>project_not_found</code></td>
+<td>The project was not specified or the directory does not exist</td>
+<td>Check <code>--project</code>, the current terminal directory, and the relative or absolute path</td>
+</tr>
+<tr>
+<td><code>build_required</code> / <code>build_not_found</code></td>
+<td>The build directory is missing</td>
+<td>Complete the intended CMake configuration and build first</td>
+</tr>
+<tr>
+<td><code>compile_database_not_found</code></td>
+<td><code>compile_commands.json</code> is missing</td>
+<td>Configure CMake again with <code>CMAKE_EXPORT_COMPILE_COMMANDS</code> enabled</td>
+</tr>
+<tr>
+<td><code>map_required</code> / <code>map_not_found</code></td>
+<td>The map was not specified or the file does not exist</td>
+<td>Confirm that linker options generate the map and check <code>--map</code></td>
+</tr>
+<tr>
+<td><code>out_required</code></td>
+<td>No output directory was specified</td>
+<td>Add <code>--out &lt;directory&gt;</code></td>
+</tr>
+<tr>
+<td><code>out_inside_project</code></td>
+<td>The output directory is the project directory or is inside it</td>
+<td>Point <code>--out</code> outside the source project</td>
+</tr>
+<tr>
+<td><code>review_output_exists</code></td>
+<td>The review file already exists</td>
+<td>Choose another output path; EmberBOM never overwrites an existing review file</td>
+</tr>
+<tr>
+<td><code>review_unreadable</code></td>
+<td>The review file cannot be read</td>
+<td>Check the <code>--review</code> path and read permissions</td>
+</tr>
+<tr>
+<td><code>review_invalid</code></td>
+<td>YAML syntax, status, or component ID is invalid</td>
+<td>Correct the YAML; IDs must come from the current scan result</td>
+</tr>
+<tr>
+<td><code>scan_argument_invalid</code></td>
+<td>An argument name or count is invalid</td>
+<td>Run EmberBOM without arguments to view current usage</td>
+</tr>
+</tbody></table>
+<p>Preserve the complete structured error code when an error occurs. Do not delete source files, disable security software, or use administrator privileges to bypass an input problem.</p>
+<h2>9. Privacy, Write Boundaries, and Product Limits</h2>
+<ul>
+<li>EmberBOM does not depend on AI at runtime and does not initiate network requests by default.</li>
+<li>It does not upload source code, paths, filenames, hashes, review data, or SBOMs.</li>
+<li>A scan reads the project and build evidence and writes artifacts only to the explicit <code>--out</code> directory.</li>
+<li><code>review init</code> writes only the explicit <code>--out</code> file and refuses to overwrite it.</li>
+<li>The report is a component and build-evidence inventory, not a legal or compliance conclusion.</li>
+<li>The current release does not support IAR, Keil, non-STM32 projects, or a second build chain.</li>
+</ul>
+<h2>10. First-Use Acceptance Checklist</h2>
+<ul>
+<li><input disabled="" type="checkbox"> Downloaded the archive and matching <code>.sha256</code> file.</li>
+<li><input disabled="" type="checkbox"> SHA-256 verification returned <code>CHECKSUM=PASS</code> on Windows or <code>OK</code> on Linux.</li>
+<li><input disabled="" type="checkbox"> <code>emberbom version</code> matches the Release tag.</li>
+<li><input disabled="" type="checkbox"> The project has a compile database and GNU linker map.</li>
+<li><input disabled="" type="checkbox"> The first scan generated all three output files.</li>
+<li><input disabled="" type="checkbox"> <code>review init</code> generated a template and refused to overwrite an existing file.</li>
+<li><input disabled="" type="checkbox"> A second scan with <code>--review</code> completed successfully.</li>
+<li><input disabled="" type="checkbox"> Unknown build inputs and candidates not included in the build remain visible in the report.</li>
+</ul>
+
+  </main>
+</body>
+</html>

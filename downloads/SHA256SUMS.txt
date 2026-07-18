@@ -1,0 +1,2 @@
+0c9e324eb098865649edbdfd2644170cb4c25ebd234b4b1394a9d841b5ba9c50  emberbom_v0.1.0-rc.9_linux_amd64.tar.gz
+c6a5be2d63a02cbbfd483862db8946c7b91a88d123aad364f7d716a1bb4cab49  emberbom_v0.1.0-rc.9_windows_amd64.zip

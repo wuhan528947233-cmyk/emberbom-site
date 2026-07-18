@@ -27,8 +27,8 @@ build command and `/` as the output directory.
 
 ## Included public evidence
 
-- `assets/rc8-fixture-report.png`: viewport capture of the real RC8 fixture report.
+- `assets/rc9-fixture-report.png`: viewport capture of the real RC9 fixture report.
 - `samples/scan-report.html`: complete fixture-generated report.
-- `samples/scan-result.json`: structured RC8 fixture result.
+- `samples/scan-result.json`: structured RC9 fixture result.
 - `samples/bom.cdx.json`: CycloneDX 1.6 fixture export.
 - `samples/SHA256SUMS.txt`: accepted hashes for all three outputs.

@@ -1,0 +1,91 @@
+EmberBOM Evaluation and Commercial License Notice
+
+Copyright (c) 2026 Han Wu, trading as EmberBOM. All rights reserved.
+
+1. Ownership
+
+EmberBOM source code and binaries are proprietary software. Except for the
+limited rights stated below or in a valid order issued by the copyright holder,
+no permission is granted to use, copy, modify, distribute, sublicense, sell, or
+create derivative works from EmberBOM.
+
+2. Fourteen-Day Evaluation
+
+One legal organization may install and use an unmodified EmberBOM evaluation
+release for fourteen consecutive days from its first use. The evaluation is
+limited to five internal team members and to projects that the organization
+owns or is authorized to scan. It is for internal product evaluation only,
+requires no payment card, and does not renew automatically. At the end of the
+evaluation, the organization must either obtain a paid license or stop using
+and delete the EmberBOM software.
+
+3. Founding Team License
+
+A completed and non-refunded USD 99 Founding Team License order grants one
+legal organization a non-exclusive, non-transferable right for up to five
+internal team members to use eligible EmberBOM versions on projects that the
+organization owns or is authorized to scan. Eligible versions are versions
+made available to that purchaser during the twelve months beginning on the
+purchase date. The right to use those eligible versions continues after the
+twelve-month update period ends. There is no automatic renewal. Access to
+versions first made available after that period may require a separate order.
+
+The organization may use, copy, and share reports, SBOMs, and other output it
+generates with EmberBOM, subject to any rights and restrictions that apply to
+its own project data and third-party content. EmberBOM claims no ownership of
+the organization's project data or generated output.
+
+4. Restrictions
+
+The software may not be redistributed, resold, sublicensed, offered as a
+hosted service, shared with an unrelated organization, or used to provide a
+software-scanning service to third parties. The software may not be modified,
+reverse engineered, decompiled, or used to bypass technical or licensing
+restrictions, except to the extent that applicable law does not allow such a
+restriction.
+
+5. Product Boundary
+
+EmberBOM identifies and reports component evidence within its documented
+supported scope. It is not a vulnerability scanner, antivirus product, legal
+or compliance service, and does not guarantee that a firmware project is free
+of unknown components, vulnerabilities, or licensing obligations. Results
+that are marked for review or unknown require human review.
+
+The license price does not include project inspection, custom configuration,
+custom rules, consulting, a service-level agreement, hosted storage, or support
+for undocumented toolchains. Documentation, reproducible defect reports, and
+generally released product corrections may be provided without creating a
+separate support obligation or guaranteed response time.
+
+6. Updates and Refunds
+
+The twelve-month update period provides access to generally released eligible
+versions, if any. It does not promise a particular release schedule, feature,
+or support duration. A full refund requested under the published fourteen-day
+compatibility refund policy ends the paid license. After a refund, the
+purchaser must stop using and delete paid EmberBOM versions. Mandatory rights
+that cannot lawfully be excluded remain unaffected.
+
+7. Third-Party Software
+
+Third-party software incorporated into or distributed with EmberBOM remains
+subject to its own license terms. See THIRD_PARTY_NOTICES.md and the LICENSES
+directory included in release archives.
+
+8. Disclaimer and Limitation of Liability
+
+TO THE MAXIMUM EXTENT PERMITTED BY APPLICABLE LAW, THE SOFTWARE IS PROVIDED
+"AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT
+LIMITED TO WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE,
+AND NONINFRINGEMENT. TO THE MAXIMUM EXTENT PERMITTED BY APPLICABLE LAW, THE
+COPYRIGHT HOLDER IS NOT LIABLE FOR INDIRECT, INCIDENTAL, SPECIAL,
+CONSEQUENTIAL, OR PUNITIVE DAMAGES, OR FOR LOSS OF DATA, PROFITS, OR BUSINESS,
+ARISING FROM THE SOFTWARE OR ITS USE.
+
+9. Order Records
+
+The Paddle checkout record or another written order accepted by the copyright
+holder identifies the purchaser, purchase date, and applicable product. If a
+valid order expressly grants additional rights, that order controls only to the
+extent of the stated difference.

@@ -1,6 +1,6 @@
 {
   "schema_version": "1.3.0",
-  "tool_version": "v0.1.0-rc.8",
+  "tool_version": "v0.1.0-rc.9",
   "rule_version": "1",
   "project": {
     "name": "stm32-cmake",
