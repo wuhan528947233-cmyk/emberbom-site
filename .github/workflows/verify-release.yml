@@ -1,0 +1,18 @@
+name: Verify public release integrity
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Match archives, checksum files, and displayed hashes
+        shell: pwsh
+        run: ./scripts/verify-release-integrity.ps1
