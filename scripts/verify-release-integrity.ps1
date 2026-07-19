@@ -80,4 +80,72 @@ foreach ($pagePath in $pages) {
     }
 }
 
+$indexPath = Join-Path $repoRoot "index.html"
+$sandboxScriptPath = Join-Path $repoRoot "paddle-sandbox.js"
+$headersPath = Join-Path $repoRoot "_headers"
+$index = Get-Content -LiteralPath $indexPath -Raw
+$sandboxScript = Get-Content -LiteralPath $sandboxScriptPath -Raw
+$headers = Get-Content -LiteralPath $headersPath -Raw
+$allPublicText = Get-ChildItem -LiteralPath $repoRoot -File -Recurse |
+    Where-Object { $_.FullName -notmatch '[\\/]\.git[\\/]' -and $_.Extension -in @('.html', '.js', '.ps1', '.yml', '.yaml', '.txt', '.md') } |
+    ForEach-Object { Get-Content -LiteralPath $_.FullName -Raw }
+$allPublicText = $allPublicText -join "`n"
+
+if ($sandboxScript -notmatch 'clientSideToken:\s*"test_[a-zA-Z0-9]{27}"') {
+    throw "paddle_sandbox_client_token_missing_or_invalid"
+}
+if ($sandboxScript -notmatch 'priceId:\s*"pri_[a-z0-9]{26}"') {
+    throw "paddle_sandbox_price_id_missing_or_invalid"
+}
+if ($allPublicText -match '(?i)pdl_(?:sdbx|live)_apikey_|webhook[_ -]?secret\s*[:=]') {
+    throw "paddle_server_secret_detected"
+}
+if ($allPublicText -match 'live_[a-zA-Z0-9]{27}') {
+    throw "paddle_live_client_token_detected"
+}
+if ($sandboxScript -notmatch 'quantity:\s*1' -or $sandboxScript -match 'quantity:\s*(?:[02-9]|[1-9][0-9]+)') {
+    throw "paddle_checkout_quantity_not_fixed_to_one"
+}
+foreach ($productionHost in @('emberbom.com', 'www.emberbom.com', 'emberbom-site.pages.dev')) {
+    if ($sandboxScript -notmatch [regex]::Escape('"' + $productionHost + '"')) {
+        throw "paddle_production_host_guard_missing: $productionHost"
+    }
+}
+if ($sandboxScript -match '\*\.pages\.dev' -or $sandboxScript -match 'endsWith\([^)]*pages\.dev') {
+    throw "paddle_pages_preview_guard_too_broad"
+}
+if ($index -notmatch [regex]::Escape('One-time purchase. Taxes may apply.')) {
+    throw "paddle_tax_notice_missing"
+}
+if ($index -match '(?i)(billed monthly|billed annually|recurring purchase|subscription purchase)') {
+    throw "paddle_offer_described_as_recurring"
+}
+foreach ($requiredPath in @('license.txt', 'refund.html', 'privacy.html', 'contact.html', 'quick-start.html')) {
+    if ($index -notmatch [regex]::Escape($requiredPath)) {
+        throw "required_public_path_missing: $requiredPath"
+    }
+}
+foreach ($requiredCsp in @("frame-ancestors 'none'", "base-uri 'self'", "X-Content-Type-Options", "Referrer-Policy")) {
+    if ($headers -notmatch [regex]::Escape($requiredCsp)) {
+        throw "required_security_header_missing: $requiredCsp"
+    }
+}
+foreach ($requiredPaddleOrigin in @(
+    'https://cdn.paddle.com',
+    'https://sandbox-api.paddle.com',
+    'https://sandbox-cdn.paddle.com',
+    'https://sandbox-buy.paddle.com'
+)) {
+    if ($headers -notmatch [regex]::Escape($requiredPaddleOrigin)) {
+        throw "required_paddle_csp_origin_missing: $requiredPaddleOrigin"
+    }
+}
+if ($headers -notmatch [regex]::Escape('payment=(self "https://sandbox-buy.paddle.com")')) {
+    throw "paddle_payment_permission_not_minimally_scoped"
+}
+if ($headers -match '(?m)(?:^|;\s*)(?:script-src|connect-src|frame-src)\s+[^;]*\*' -or $headers -match "'unsafe-eval'") {
+    throw "paddle_csp_is_broad_or_unsafe"
+}
+
 "PUBLIC_RELEASE_INTEGRITY=PASS"
+"PADDLE_SANDBOX_INTEGRATION=PASS"

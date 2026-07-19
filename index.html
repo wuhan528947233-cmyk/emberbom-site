@@ -15,6 +15,7 @@
   <link rel="canonical" href="https://emberbom.com/">
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="styles.css">
+  <script src="paddle-sandbox.js" defer></script>
 </head>
 <body>
   <a class="skip-link" href="#main-content">Skip to main content</a>
@@ -164,16 +165,19 @@
       </div>
       <article class="price-card">
         <p class="plan">Founding Team License</p>
-        <p class="price"><span>$</span>99 <small>USD · one-time</small></p>
+        <p class="price"><span id="purchase-price-symbol">$</span><strong id="purchase-price-total">99</strong> <small id="purchase-price-note">USD · one-time</small></p>
+        <p class="fine-print">One-time purchase. Taxes may apply.</p>
         <ul>
           <li>One legal organization</li>
           <li>Up to five internal users</li>
-          <li>Perpetual use of eligible versions</li>
-          <li>Twelve months of generally released updates</li>
+          <li>Eligible versions released during the first 12 months remain usable afterward</li>
           <li>No automatic renewal</li>
           <li>14-day compatibility refund after purchase</li>
+          <li>No consulting, custom project configuration, or SLA</li>
         </ul>
-        <a class="button primary full" href="mailto:support@emberbom.com?subject=EmberBOM%20Founding%20Team%20License">Ask about the founding license</a>
+        <a class="button primary full" id="purchase-interest" href="mailto:support@emberbom.com?subject=EmberBOM%20Founding%20Team%20License">Ask about the founding license</a>
+        <button class="button primary full" id="paddle-sandbox-checkout" type="button" hidden disabled>Test checkout</button>
+        <p class="fine-print" id="sandbox-mode-notice" hidden><strong>Sandbox/Test Mode:</strong> this checkout takes no real payment.</p>
         <p class="fine-print" id="purchase-status">Live Paddle checkout will open after seller-account approval. No payment is accepted by email.</p>
       </article>
     </section>
