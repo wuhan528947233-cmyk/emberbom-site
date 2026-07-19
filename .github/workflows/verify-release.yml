@@ -16,3 +16,6 @@ jobs:
       - name: Match archives, checksum files, and displayed hashes
         shell: pwsh
         run: ./scripts/verify-release-integrity.ps1
+      - name: Verify Sandbox webhook and fulfillment rules
+        shell: pwsh
+        run: ./scripts/verify-paddle-fulfillment.ps1

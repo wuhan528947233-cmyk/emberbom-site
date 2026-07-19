@@ -15,6 +15,7 @@
   <link rel="canonical" href="https://emberbom.com/">
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="styles-t053.css">
   <script src="paddle-sandbox.js" defer></script>
 </head>
 <body>
@@ -176,6 +177,15 @@
           <li>No consulting, custom project configuration, or SLA</li>
         </ul>
         <a class="button primary full" id="purchase-interest" href="mailto:support@emberbom.com?subject=EmberBOM%20Founding%20Team%20License">Ask about the founding license</a>
+        <div class="sandbox-licensee" id="sandbox-licensee-fields" hidden>
+          <label for="sandbox-licensee-name">Legal organization name</label>
+          <input id="sandbox-licensee-name" name="licensee_name" type="text" minlength="2" maxlength="120" autocomplete="organization" required>
+          <label class="sandbox-authority" for="sandbox-licensee-authority">
+            <input id="sandbox-licensee-authority" type="checkbox" required>
+            <span>I confirm that I am authorized to purchase for this legal organization.</span>
+          </label>
+          <p class="fine-print sandbox-validation" id="sandbox-licensee-error" role="alert" hidden></p>
+        </div>
         <button class="button primary full" id="paddle-sandbox-checkout" type="button" hidden disabled>Test checkout</button>
         <p class="fine-print" id="sandbox-mode-notice" hidden><strong>Sandbox/Test Mode:</strong> this checkout takes no real payment.</p>
         <p class="fine-print" id="purchase-status">Live Paddle checkout will open after seller-account approval. No payment is accepted by email.</p>

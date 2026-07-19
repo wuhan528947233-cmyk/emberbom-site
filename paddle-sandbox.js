@@ -7,8 +7,9 @@
     clientSideToken: "test_8948b1d34503e066d8470105d6d",
     priceId: "pri_01kxw46v5y5m181arczqex1gw8",
     quantity: 1,
+    offerIdentifier: "emberbom_founding_team_v1",
     previewHosts: Object.freeze([
-      "codex-t052-paddle-sandbox-ch.emberbom-site.pages.dev",
+      "codex-t053-paddle-sandbox-fu.emberbom-site.pages.dev",
     ]),
   });
 
@@ -36,6 +37,39 @@
       button.disabled = true;
     }
     setStatus(message);
+  }
+
+  function normalizeLicenseeName(value) {
+    const normalized = String(value || "").normalize("NFKC").trim().replace(/\s+/g, " ");
+    if (
+      normalized.length < 2 ||
+      normalized.length > 120 ||
+      !/^[\p{L}\p{N}][\p{L}\p{N}\p{M} .,'’&()\-_/]{1,119}$/u.test(normalized)
+    ) {
+      return null;
+    }
+    return normalized;
+  }
+
+  function getLicenseeData() {
+    const nameInput = document.getElementById("sandbox-licensee-name");
+    const authorityInput = document.getElementById("sandbox-licensee-authority");
+    const error = document.getElementById("sandbox-licensee-error");
+    const licenseeName = normalizeLicenseeName(nameInput?.value);
+
+    if (!licenseeName || !authorityInput?.checked) {
+      error.textContent = !licenseeName
+        ? "Enter a valid legal organization name (2–120 characters)."
+        : "Confirm that you are authorized to purchase for this organization.";
+      error.hidden = false;
+      return null;
+    }
+
+    error.hidden = true;
+    return {
+      licensee_name: licenseeName,
+      offer_identifier: SANDBOX_CONFIG.offerIdentifier,
+    };
   }
 
   function showLocalizedPrice(result) {
@@ -71,7 +105,7 @@
       const transactionId = event.data?.transaction_id || event.data?.transactionId;
       if (/^txn_[a-z0-9]+$/i.test(transactionId || "")) {
         setStatus(
-          `Sandbox checkout completed. Test transaction: ${transactionId}. No real commercial license was issued. Server-verified fulfillment is not implemented.`
+          `Sandbox checkout completed. Test transaction: ${transactionId}. Server-side Sandbox fulfillment is pending the verified Paddle webhook; no real commercial license was issued.`
         );
       } else {
         setStatus(
@@ -119,9 +153,11 @@
     const purchaseInterest = document.getElementById("purchase-interest");
     const checkoutButton = document.getElementById("paddle-sandbox-checkout");
     const sandboxNotice = document.getElementById("sandbox-mode-notice");
+    const licenseeFields = document.getElementById("sandbox-licensee-fields");
     purchaseInterest.hidden = true;
     checkoutButton.hidden = false;
     sandboxNotice.hidden = false;
+    licenseeFields.hidden = false;
     setStatus("Loading Paddle Sandbox pricing…");
 
     try {
@@ -148,8 +184,13 @@
           showFallback("Sandbox checkout was blocked because this host is not approved for testing.");
           return;
         }
+        const customData = getLicenseeData();
+        if (!customData) {
+          return;
+        }
         window.Paddle.Checkout.open({
           items: [{ priceId: SANDBOX_CONFIG.priceId, quantity: SANDBOX_CONFIG.quantity }],
+          customData,
         });
       });
     } catch (error) {

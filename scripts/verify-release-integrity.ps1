@@ -111,7 +111,7 @@ foreach ($productionHost in @('emberbom.com', 'www.emberbom.com', 'emberbom-site
         throw "paddle_production_host_guard_missing: $productionHost"
     }
 }
-$expectedPreviewHost = 'codex-t052-paddle-sandbox-ch.emberbom-site.pages.dev'
+$expectedPreviewHost = 'codex-t053-paddle-sandbox-fu.emberbom-site.pages.dev'
 if ($sandboxScript -notmatch [regex]::Escape('"' + $expectedPreviewHost + '"')) {
     throw "paddle_exact_preview_host_missing"
 }
@@ -120,6 +120,24 @@ if ($sandboxScript -match '\*\.pages\.dev' -or $sandboxScript -match 'endsWith\(
 }
 if ($index -notmatch [regex]::Escape('One-time purchase. Taxes may apply.')) {
     throw "paddle_tax_notice_missing"
+}
+foreach ($requiredCheckoutField in @(
+    'id="sandbox-licensee-name"',
+    'maxlength="120"',
+    'id="sandbox-licensee-authority"'
+)) {
+    if ($index -notmatch [regex]::Escape($requiredCheckoutField)) {
+        throw "paddle_licensee_field_missing: $requiredCheckoutField"
+    }
+}
+foreach ($requiredCustomData in @(
+    'licensee_name: licenseeName',
+    'offer_identifier: SANDBOX_CONFIG.offerIdentifier',
+    'customData,'
+)) {
+    if ($sandboxScript -notmatch [regex]::Escape($requiredCustomData)) {
+        throw "paddle_custom_data_missing: $requiredCustomData"
+    }
 }
 if ($index -match '(?i)(billed monthly|billed annually|recurring purchase|subscription purchase)') {
     throw "paddle_offer_described_as_recurring"

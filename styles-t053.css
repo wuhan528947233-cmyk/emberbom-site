@@ -1,0 +1,47 @@
+.sandbox-licensee {
+  display: grid;
+  gap: 10px;
+  margin: 20px 0;
+}
+
+.sandbox-licensee[hidden] {
+  display: none;
+}
+
+.sandbox-licensee > label:first-child {
+  font-size: .88rem;
+  font-weight: 750;
+}
+
+.sandbox-licensee input[type="text"] {
+  width: 100%;
+  padding: 12px 13px;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  background: var(--paper);
+  color: var(--ink);
+  font: inherit;
+}
+
+.sandbox-licensee input[type="text"]:focus-visible,
+.sandbox-authority input:focus-visible {
+  outline: 3px solid var(--ember-2);
+  outline-offset: 2px;
+}
+
+.sandbox-authority {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  color: var(--muted);
+  font-size: .82rem;
+}
+
+.sandbox-authority input {
+  margin-top: 5px;
+}
+
+.sandbox-validation {
+  color: #ffb69a;
+  margin: 0;
+}
