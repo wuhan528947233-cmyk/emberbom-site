@@ -166,11 +166,23 @@ function classifyAdjustment(event, base) {
   }
 
   const common = { ...base, transactionId, adjustmentId };
-  if (
-    data.status === "approved" &&
-    data.type === "full" &&
-    (data.action === "refund" || data.action === "chargeback")
-  ) {
+  if (data.action === "refund") {
+    const items = data.items;
+    const item = Array.isArray(items) && items.length === 1 ? items[0] : null;
+    const total = data.totals?.total;
+    const isPositiveIntegerAmount = typeof total === "string" && /^[1-9]\d*$/.test(total);
+    const isSingleItemFullRefund =
+      base.eventType === "adjustment.updated" &&
+      data.status === "approved" &&
+      item &&
+      typeof item === "object" &&
+      item.type === "full" &&
+      isPositiveIntegerAmount &&
+      item.totals?.total === total &&
+      (item.amount === undefined || item.amount === total);
+    return { ...common, kind: isSingleItemFullRefund ? "revoke" : "record_only" };
+  }
+  if (data.status === "approved" && data.type === "full" && data.action === "chargeback") {
     return { ...common, kind: "revoke" };
   }
   if (data.status === "approved" && data.action === "chargeback_reverse") {

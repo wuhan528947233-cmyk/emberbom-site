@@ -78,6 +78,7 @@ class FakeD1 {
 function transactionEvent({
   eventCharacter = "a",
   transactionCharacter = "a",
+  transactionId = ids.transaction(transactionCharacter),
   occurredAt = "2026-07-19T10:00:00.000Z",
   licenseeName = "Example Robotics Ltd",
 } = {}) {
@@ -86,7 +87,7 @@ function transactionEvent({
     event_type: "transaction.completed",
     occurred_at: occurredAt,
     data: {
-      id: ids.transaction(transactionCharacter),
+      id: transactionId,
       status: "completed",
       customer_id: ids.customer(transactionCharacter),
       collection_mode: "automatic",
@@ -118,6 +119,11 @@ function adjustmentEvent({
   action = "refund",
   status = "approved",
   type = "full",
+  itemType = "full",
+  total = "10779",
+  itemTotal = total,
+  amount = total,
+  items,
   eventType = "adjustment.updated",
 }) {
   return {
@@ -130,6 +136,14 @@ function adjustmentEvent({
       action,
       status,
       type,
+      totals: { total },
+      items: items === undefined ? [
+        {
+          type: itemType,
+          amount,
+          totals: { total: itemTotal },
+        },
+      ] : items,
     },
   };
 }
@@ -212,7 +226,7 @@ test("Pages endpoint rejects unsigned requests without writing to D1", async () 
   assert.equal(d1.db.prepare("SELECT COUNT(*) AS count FROM entitlements").get().count, 0);
 });
 
-test("Pages endpoint reports only safe configuration booleans on Preview", async () => {
+test("Pages endpoint reports configuration failure without configuration probes", async () => {
   const previewUrl = "https://codex-t053-paddle-sandbox-fu.emberbom-site.pages.dev/api/paddle-webhook";
   const request = (hostname = previewUrl) => new Request(hostname, { method: "POST", body: "{}" });
 
@@ -221,8 +235,6 @@ test("Pages endpoint reports only safe configuration booleans on Preview", async
   assert.deepEqual(await response.json(), {
     ok: false,
     error: "sandbox_fulfillment_not_configured",
-    webhookSecretConfigured: false,
-    licenseDatabaseConfigured: false,
   });
 
   response = await onRequest({
@@ -233,8 +245,6 @@ test("Pages endpoint reports only safe configuration booleans on Preview", async
   assert.deepEqual(await response.json(), {
     ok: false,
     error: "sandbox_fulfillment_not_configured",
-    webhookSecretConfigured: true,
-    licenseDatabaseConfigured: false,
   });
 
   response = await onRequest({
@@ -245,8 +255,6 @@ test("Pages endpoint reports only safe configuration booleans on Preview", async
   assert.deepEqual(await response.json(), {
     ok: false,
     error: "sandbox_fulfillment_not_configured",
-    webhookSecretConfigured: false,
-    licenseDatabaseConfigured: true,
   });
 
   response = await onRequest({
@@ -356,10 +364,61 @@ test("an approved full refund revokes and an older completed event cannot reacti
   assert.equal(row.last_event_at, "2026-07-19T10:30:00.000Z");
 });
 
+test("real Paddle single-item full refund revokes when top-level type is partial", () => {
+  const db = database();
+  const transactionId = "txn_01kxwn0jbkx2snhykxrwk8ftr2";
+  const adjustment = {
+    event_id: "evt_01kxwp79hkecv33j5g42vkr492",
+    event_type: "adjustment.updated",
+    occurred_at: "2026-07-19T07:52:00.000Z",
+    data: {
+      id: "adj_01kxwnsn9g10rpw81qswcyssh8",
+      transaction_id: transactionId,
+      action: "refund",
+      status: "approved",
+      type: "partial",
+      totals: { total: "10779" },
+      items: [
+        {
+          type: "full",
+          amount: "10779",
+          totals: { total: "10779" },
+        },
+      ],
+    },
+  };
+
+  apply(db, transactionEvent({
+    transactionId,
+    occurredAt: "2026-07-19T07:00:00.000Z",
+  }));
+  assert.equal(classifyFulfillmentEvent(adjustment).kind, "revoke");
+  apply(db, adjustment);
+  const row = db.prepare("SELECT status, last_adjustment_id FROM entitlements").get();
+  assert.equal(row.status, "revoked");
+  assert.equal(row.last_adjustment_id, adjustment.data.id);
+});
+
 for (const scenario of [
-  { name: "partial refund", type: "partial", status: "approved" },
+  { name: "partial item refund", type: "partial", itemType: "partial" },
+  {
+    name: "multiple items with only one full item",
+    type: "partial",
+    items: [
+      { type: "full", amount: "10779", totals: { total: "10779" } },
+      { type: "partial", amount: "1", totals: { total: "1" } },
+    ],
+  },
+  { name: "item total mismatch", type: "partial", itemTotal: "10778" },
+  { name: "item amount mismatch", type: "partial", amount: "10778" },
+  { name: "zero adjustment total", type: "full", total: "0" },
+  { name: "non-integer adjustment total", type: "full", total: "107.79" },
+  { name: "numeric adjustment total", type: "full", total: 10779 },
+  { name: "created refund event", type: "full", eventType: "adjustment.created" },
   { name: "pending refund", type: "full", status: "pending_approval" },
   { name: "rejected refund", type: "full", status: "rejected" },
+  { name: "missing items", type: "partial", items: null },
+  { name: "malformed items", type: "partial", items: {} },
 ]) {
   test(`${scenario.name} does not revoke`, () => {
     const db = database();
@@ -370,11 +429,45 @@ for (const scenario of [
       occurredAt: "2026-07-19T11:00:00.000Z",
       type: scenario.type,
       status: scenario.status,
+      itemType: scenario.itemType,
+      total: scenario.total,
+      itemTotal: scenario.itemTotal,
+      amount: scenario.amount,
+      items: scenario.items,
+      eventType: scenario.eventType,
     }));
     assert.equal(db.prepare("SELECT status FROM entitlements").get().status, "active");
     assert.equal(db.prepare("SELECT COUNT(*) AS count FROM processed_events").get().count, 2);
   });
 }
+
+test("a duplicate full-refund event is idempotent", () => {
+  const db = database();
+  const event = adjustmentEvent({
+    eventCharacter: "q",
+    adjustmentCharacter: "q",
+    occurredAt: "2026-07-19T11:00:00.000Z",
+  });
+  apply(db, transactionEvent());
+  assert.equal(apply(db, event), "processed");
+  const first = db.prepare("SELECT status, updated_at FROM entitlements").get();
+  assert.equal(apply(db, event, "2026-07-19T12:30:00.000Z"), "duplicate");
+  const second = db.prepare("SELECT status, updated_at FROM entitlements").get();
+  assert.deepEqual(second, first);
+  assert.equal(db.prepare("SELECT COUNT(*) AS count FROM processed_events WHERE event_id = ?").get(event.event_id).count, 1);
+});
+
+test("a full-refund event without a matching entitlement cannot create a revoked entitlement", () => {
+  const db = database();
+  const event = adjustmentEvent({
+    eventCharacter: "r",
+    transactionCharacter: "r",
+    adjustmentCharacter: "r",
+    occurredAt: "2026-07-19T11:00:00.000Z",
+  });
+  assert.equal(apply(db, event), "processed");
+  assert.equal(db.prepare("SELECT status FROM entitlements").get().status, "review_required");
+});
 
 test("chargeback reverse requires review and never restores active automatically", () => {
   const db = database();
