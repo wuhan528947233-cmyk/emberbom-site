@@ -111,6 +111,10 @@ foreach ($productionHost in @('emberbom.com', 'www.emberbom.com', 'emberbom-site
         throw "paddle_production_host_guard_missing: $productionHost"
     }
 }
+$expectedPreviewHost = 'codex-t052-paddle-sandbox-ch.emberbom-site.pages.dev'
+if ($sandboxScript -notmatch [regex]::Escape('"' + $expectedPreviewHost + '"')) {
+    throw "paddle_exact_preview_host_missing"
+}
 if ($sandboxScript -match '\*\.pages\.dev' -or $sandboxScript -match 'endsWith\([^)]*pages\.dev') {
     throw "paddle_pages_preview_guard_too_broad"
 }

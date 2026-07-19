@@ -7,7 +7,9 @@
     clientSideToken: "test_8948b1d34503e066d8470105d6d",
     priceId: "pri_01kxw46v5y5m181arczqex1gw8",
     quantity: 1,
-    previewHosts: Object.freeze([]),
+    previewHosts: Object.freeze([
+      "codex-t052-paddle-sandbox-ch.emberbom-site.pages.dev",
+    ]),
   });
 
   const LOCAL_HOSTS = new Set(["localhost", "127.0.0.1"]);
