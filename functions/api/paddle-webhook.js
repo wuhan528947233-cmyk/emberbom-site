@@ -70,8 +70,17 @@ export async function onRequest(context) {
   if (!ALLOWED_SANDBOX_HOSTS.has(hostname)) {
     return json(404, { ok: false, error: "not_found" });
   }
-  if (!env.PADDLE_WEBHOOK_SECRET || !env.LICENSE_DB) {
-    return json(503, { ok: false, error: "sandbox_fulfillment_not_configured" });
+  const webhookSecretConfigured = Boolean(env.PADDLE_WEBHOOK_SECRET);
+  const licenseDatabaseConfigured = Boolean(
+    env.LICENSE_DB && typeof env.LICENSE_DB.prepare === "function"
+  );
+  if (!webhookSecretConfigured || !licenseDatabaseConfigured) {
+    return json(503, {
+      ok: false,
+      error: "sandbox_fulfillment_not_configured",
+      webhookSecretConfigured,
+      licenseDatabaseConfigured,
+    });
   }
 
   const declaredLength = Number(request.headers.get("content-length") || 0);

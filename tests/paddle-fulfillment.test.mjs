@@ -212,6 +212,51 @@ test("Pages endpoint rejects unsigned requests without writing to D1", async () 
   assert.equal(d1.db.prepare("SELECT COUNT(*) AS count FROM entitlements").get().count, 0);
 });
 
+test("Pages endpoint reports only safe configuration booleans on Preview", async () => {
+  const previewUrl = "https://codex-t053-paddle-sandbox-fu.emberbom-site.pages.dev/api/paddle-webhook";
+  const request = (hostname = previewUrl) => new Request(hostname, { method: "POST", body: "{}" });
+
+  let response = await onRequest({ request: request(), env: {} });
+  assert.equal(response.status, 503);
+  assert.deepEqual(await response.json(), {
+    ok: false,
+    error: "sandbox_fulfillment_not_configured",
+    webhookSecretConfigured: false,
+    licenseDatabaseConfigured: false,
+  });
+
+  response = await onRequest({
+    request: request(),
+    env: { PADDLE_WEBHOOK_SECRET: SECRET, LICENSE_DB: {} },
+  });
+  assert.equal(response.status, 503);
+  assert.deepEqual(await response.json(), {
+    ok: false,
+    error: "sandbox_fulfillment_not_configured",
+    webhookSecretConfigured: true,
+    licenseDatabaseConfigured: false,
+  });
+
+  response = await onRequest({
+    request: request(),
+    env: { LICENSE_DB: new FakeD1() },
+  });
+  assert.equal(response.status, 503);
+  assert.deepEqual(await response.json(), {
+    ok: false,
+    error: "sandbox_fulfillment_not_configured",
+    webhookSecretConfigured: false,
+    licenseDatabaseConfigured: true,
+  });
+
+  response = await onRequest({
+    request: request("https://emberbom.com/api/paddle-webhook"),
+    env: {},
+  });
+  assert.equal(response.status, 404);
+  assert.deepEqual(await response.json(), { ok: false, error: "not_found" });
+});
+
 test("Pages endpoint accepts a signed event once and rejects production hosts", async () => {
   const d1 = new FakeD1();
   const event = transactionEvent();
