@@ -7,6 +7,10 @@ $pages = @(
     Join-Path $repoRoot "index.html"
     Join-Path $repoRoot "fulfillment.html"
 )
+$platformFiles = @{
+    windows = "emberbom_v0.1.0-rc.9_windows_amd64.zip"
+    linux = "emberbom_v0.1.0-rc.9_linux_amd64.tar.gz"
+}
 
 if (-not (Test-Path -LiteralPath $manifestPath -PathType Leaf)) {
     throw "release_manifest_missing"
@@ -48,7 +52,7 @@ foreach ($entry in $entries.GetEnumerator()) {
     }
 }
 
-$releaseLinkPattern = 'href="downloads/(?<file>[^"\s]+(?:\.zip|\.tar\.gz))"[^>]*>.*?</a>\s*<code>(?<hash>[0-9a-f]{64})</code>'
+$releaseLinkPattern = 'href="/download/(?<platform>windows|linux)"[^>]*>.*?</a>\s*<code>(?<hash>[0-9a-f]{64})</code>'
 foreach ($pagePath in $pages) {
     $content = Get-Content -LiteralPath $pagePath -Raw
     $matches = [regex]::Matches(
@@ -62,8 +66,12 @@ foreach ($pagePath in $pages) {
 
     $seen = @{}
     foreach ($match in $matches) {
-        $file = $match.Groups['file'].Value
+        $platform = $match.Groups['platform'].Value
+        $file = $platformFiles[$platform]
         $hash = $match.Groups['hash'].Value
+        if ([string]::IsNullOrWhiteSpace($file)) {
+            throw "release_page_unknown_platform: $platform"
+        }
         if (-not $entries.ContainsKey($file)) {
             throw "release_page_unknown_archive: $file"
         }

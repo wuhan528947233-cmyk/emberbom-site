@@ -16,3 +16,6 @@ jobs:
       - name: Match archives, checksum files, and displayed hashes
         shell: pwsh
         run: ./scripts/verify-release-integrity.ps1
+      - name: Verify anonymous download counter
+        shell: pwsh
+        run: ./scripts/verify-download-counter.ps1
