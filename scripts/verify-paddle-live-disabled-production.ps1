@@ -38,23 +38,41 @@ function Read-Body {
 }
 
 try {
-    $criticalPages = @(
-        "/",
-        "/quick-start.html",
-        "/privacy.html",
-        "/terms.html",
-        "/refund.html",
-        "/license.txt",
-        "/fulfillment.html",
-        "/contact.html"
-    )
+    $criticalPages = [ordered]@{
+        "/" = $null
+        "/quick-start.html" = "/quick-start"
+        "/privacy.html" = "/privacy"
+        "/terms.html" = "/terms"
+        "/refund.html" = "/refund"
+        "/license.txt" = $null
+        "/fulfillment.html" = "/fulfillment"
+        "/contact.html" = "/contact"
+    }
 
     $homeResponse = $null
-    foreach ($path in $criticalPages) {
+    foreach ($path in $criticalPages.Keys) {
         $response = Send-Request -Method ([System.Net.Http.HttpMethod]::Get) -Path $path
         try {
-            if ([int]$response.StatusCode -ne 200) {
-                throw "critical_page_failed: $path returned $([int]$response.StatusCode)"
+            $expectedRedirect = $criticalPages[$path]
+            if ($null -eq $expectedRedirect) {
+                if ([int]$response.StatusCode -ne 200) {
+                    throw "critical_page_failed: $path returned $([int]$response.StatusCode)"
+                }
+            } else {
+                if ([int]$response.StatusCode -ne 308 -or
+                    $null -eq $response.Headers.Location -or
+                    $response.Headers.Location.ToString() -ne $expectedRedirect) {
+                    throw "critical_page_redirect_failed: $path"
+                }
+
+                $redirectResponse = Send-Request -Method ([System.Net.Http.HttpMethod]::Get) -Path $expectedRedirect
+                try {
+                    if ([int]$redirectResponse.StatusCode -ne 200) {
+                        throw "critical_page_target_failed: $expectedRedirect returned $([int]$redirectResponse.StatusCode)"
+                    }
+                } finally {
+                    $redirectResponse.Dispose()
+                }
             }
             if ($path -eq "/") {
                 $homeResponse = $response
