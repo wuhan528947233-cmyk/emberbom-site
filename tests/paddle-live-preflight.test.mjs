@@ -10,7 +10,7 @@ import {
 const PRODUCT_ID = `pro_${"p".repeat(26)}`;
 const PRICE_ID = `pri_${"p".repeat(26)}`;
 const DATABASE = { prepare() {} };
-const PREVIEW_HOST = "codex-t054-paddle-live-preflight.emberbom-site.pages.dev";
+const PREVIEW_HOST = "codex-t055-paddle-live-preflight.emberbom-site.pages.dev";
 const configEndpointSource = readFileSync(new URL("../functions/api/paddle-config.js", import.meta.url), "utf8")
   .replace("../_lib/paddle-runtime.mjs", new URL("../functions/_lib/paddle-runtime.mjs", import.meta.url).href);
 const { onRequest: paddleConfig } = await import(
