@@ -15,19 +15,18 @@ Status: code and configuration preparation only. Live checkout is disabled, no L
 
 The browser obtains public checkout identifiers from `/api/paddle-config`. It does not contain hardcoded Paddle identifiers and does not fall back between environments. The webhook independently validates the environment, exact host, Product ID, Price ID, fixed `emberbom_founding_team_v1` offer, Paddle signature, idempotency, and entitlement state transitions.
 
-## Cloudflare variables to add later
+## Cloudflare environment configuration
 
-Do not configure these as part of T055. Use environment-specific values; never copy values between Preview and Production.
+The Pages Wrangler file is the source of truth. T056 keeps the browser-safe Sandbox client token, Product ID, and Price ID only in `env.preview.vars`; they must never be copied to Production. The Sandbox webhook secret remains encrypted outside Git.
 
 Preview:
 
 - `PADDLE_ENVIRONMENT=sandbox`
-- `PADDLE_CLIENT_SIDE_TOKEN=<Sandbox client-side token>`
-- `PADDLE_PRODUCT_ID=<Sandbox Product ID>`
-- `PADDLE_PRICE_ID=<Sandbox Price ID>`
+- `PADDLE_CLIENT_SIDE_TOKEN`, `PADDLE_PRODUCT_ID`, and `PADDLE_PRICE_ID` are the reviewed Sandbox public identifiers in `env.preview.vars`
 - `PADDLE_WEBHOOK_SECRET=<existing Sandbox notification destination secret>`
 - `PADDLE_LIVE_CHECKOUT_ENABLED=false`
 - `LICENSE_DB` remains bound to `emberbom-licenses-sandbox`
+- `DOWNLOAD_METRICS_DB` remains bound to `emberbom-download-metrics-preview`
 
 Production, only after a separate approval:
 
@@ -37,6 +36,7 @@ Production, only after a separate approval:
 - `PADDLE_PRICE_ID=<Live Price ID>`
 - `PADDLE_LIVE_CHECKOUT_ENABLED=false` until the final go-live action
 - `LICENSE_DB` remains bound to `emberbom-licenses-production`
+- `DOWNLOAD_METRICS_DB` remains bound to `emberbom-download-metrics`
 
 Do not add a Production `PADDLE_WEBHOOK_SECRET` until a Live notification destination is deliberately created in a later approved task. Do not use a Paddle API key.
 

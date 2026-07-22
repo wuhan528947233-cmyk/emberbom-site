@@ -120,11 +120,19 @@ test("Wrangler keeps Preview Sandbox and Production Live bindings separate and d
   assert.match(production, /PADDLE_ENVIRONMENT = "live"/);
   assert.match(production, /PADDLE_LIVE_CHECKOUT_ENABLED = "false"/);
   assert.match(production, /database_name = "emberbom-licenses-production"/);
+  assert.match(production, /binding = "DOWNLOAD_METRICS_DB"/);
+  assert.match(production, /database_name = "emberbom-download-metrics"/);
+  assert.doesNotMatch(production, /emberbom-download-metrics-preview/);
   assert.doesNotMatch(production, /emberbom-licenses-sandbox|test_|pri_[a-z\d]{26}|pro_[a-z\d]{26}/);
   assert.match(preview, /PADDLE_ENVIRONMENT = "sandbox"/);
   assert.match(preview, /PADDLE_LIVE_CHECKOUT_ENABLED = "false"/);
+  assert.match(preview, /PADDLE_CLIENT_SIDE_TOKEN = "test_8948b1d34503e066d8470105d6d"/);
+  assert.match(preview, /PADDLE_PRODUCT_ID = "pro_01kxw40xxjvhpz5v9b14tca6he"/);
+  assert.match(preview, /PADDLE_PRICE_ID = "pri_01kxw46v5y5m181arczqex1gw8"/);
   assert.match(preview, /database_name = "emberbom-licenses-sandbox"/);
-  assert.doesNotMatch(preview, /emberbom-licenses-production|live_|pri_[a-z\d]{26}|pro_[a-z\d]{26}/);
+  assert.match(preview, /binding = "DOWNLOAD_METRICS_DB"/);
+  assert.match(preview, /database_name = "emberbom-download-metrics-preview"/);
+  assert.doesNotMatch(preview, /emberbom-licenses-production|live_/);
 });
 
 test("Browser code reads runtime configuration and has no credential fallback", () => {

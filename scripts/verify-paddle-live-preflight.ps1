@@ -23,17 +23,42 @@ foreach ($required in @(
     'PADDLE_ENVIRONMENT = "live"',
     'PADDLE_LIVE_CHECKOUT_ENABLED = "false"',
     'database_name = "emberbom-licenses-production"',
+    'database_name = "emberbom-download-metrics"',
     '[env.preview.vars]',
     'PADDLE_ENVIRONMENT = "sandbox"',
-    'database_name = "emberbom-licenses-sandbox"'
+    'database_name = "emberbom-licenses-sandbox"',
+    'database_name = "emberbom-download-metrics-preview"'
 )) {
     if ($wrangler -notmatch [regex]::Escape($required)) {
         throw "paddle_live_preflight_config_missing: $required"
     }
 }
 
-if ($wrangler -match '(?i)PADDLE_(?:CLIENT_SIDE_TOKEN|PRODUCT_ID|PRICE_ID|WEBHOOK_SECRET)\s*=') {
-    throw "paddle_identifier_or_secret_committed_to_wrangler"
+$productionConfig = [regex]::Match(
+    $wrangler,
+    '(?s)\[env\.production\.vars\](.*?)\[env\.preview\.vars\]'
+).Groups[1].Value
+$previewConfig = [regex]::Match(
+    $wrangler,
+    '(?s)\[env\.preview\.vars\](.*)$'
+).Groups[1].Value
+
+if ($productionConfig -match '(?i)PADDLE_(?:CLIENT_SIDE_TOKEN|PRODUCT_ID|PRICE_ID|WEBHOOK_SECRET)\s*=') {
+    throw "production_paddle_identifier_or_secret_committed_to_wrangler"
+}
+foreach ($requiredPreviewPattern in @(
+    'PADDLE_CLIENT_SIDE_TOKEN\s*=\s*"test_[A-Za-z0-9]{20,}"',
+    'PADDLE_PRODUCT_ID\s*=\s*"pro_[a-z0-9]{26}"',
+    'PADDLE_PRICE_ID\s*=\s*"pri_[a-z0-9]{26}"'
+)) {
+    if ($previewConfig -notmatch $requiredPreviewPattern) {
+        throw "preview_sandbox_identifier_missing: $requiredPreviewPattern"
+    }
+}
+if ($previewConfig -match 'live_[A-Za-z0-9]{20,}' -or
+    $previewConfig -match 'emberbom-licenses-production' -or
+    $previewConfig -match 'emberbom-download-metrics"') {
+    throw "preview_contains_production_configuration"
 }
 if (($runtime + "`n" + $frontend) -match '(?:test|live)_[a-zA-Z0-9]{20,}' -or
     ($runtime + "`n" + $frontend) -match '(?:pri|pro)_[a-z0-9]{26}') {

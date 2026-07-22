@@ -13,11 +13,24 @@ binding = "LICENSE_DB"
 database_name = "emberbom-licenses-production"
 database_id = "42f2b649-641c-4a95-8aba-db260738083d"
 
+[[env.production.d1_databases]]
+binding = "DOWNLOAD_METRICS_DB"
+database_name = "emberbom-download-metrics"
+database_id = "fe72bc4c-f162-497d-aa9b-c9749958722d"
+
 [env.preview.vars]
 PADDLE_ENVIRONMENT = "sandbox"
 PADDLE_LIVE_CHECKOUT_ENABLED = "false"
+PADDLE_CLIENT_SIDE_TOKEN = "test_8948b1d34503e066d8470105d6d"
+PADDLE_PRODUCT_ID = "pro_01kxw40xxjvhpz5v9b14tca6he"
+PADDLE_PRICE_ID = "pri_01kxw46v5y5m181arczqex1gw8"
 
 [[env.preview.d1_databases]]
 binding = "LICENSE_DB"
 database_name = "emberbom-licenses-sandbox"
 database_id = "c523d1c8-6c91-4025-b476-17012a0b00c3"
+
+[[env.preview.d1_databases]]
+binding = "DOWNLOAD_METRICS_DB"
+database_name = "emberbom-download-metrics-preview"
+database_id = "2ed52cb5-4202-422e-b9d1-13d3a18d1c3d"
