@@ -1,8 +1,8 @@
 /*
   X-Content-Type-Options: nosniff
   Referrer-Policy: strict-origin-when-cross-origin
-  Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=()
-  Content-Security-Policy: default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self' mailto:
+  Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=(self "https://sandbox-buy.paddle.com" "https://buy.paddle.com")
+  Content-Security-Policy: default-src 'self'; script-src 'self' https://cdn.paddle.com; style-src 'self' 'unsafe-inline' https://sandbox-cdn.paddle.com https://cdn.paddle.com; img-src 'self' data:; font-src 'self'; connect-src 'self' https://sandbox-api.paddle.com https://api.paddle.com https://o522631.ingest.sentry.io; frame-src https://sandbox-buy.paddle.com https://buy.paddle.com; frame-ancestors 'none'; base-uri 'self'; form-action 'self' mailto:
 
 /downloads/*
   Cache-Control: public, max-age=31536000, immutable

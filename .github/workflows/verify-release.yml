@@ -2,7 +2,7 @@ name: Verify public release integrity
 
 on:
   push:
-    branches: [main]
+    branches: [main, 'codex/**']
   pull_request:
 
 permissions:
@@ -16,6 +16,9 @@ jobs:
       - name: Match archives, checksum files, and displayed hashes
         shell: pwsh
         run: ./scripts/verify-release-integrity.ps1
+      - name: Verify Paddle environment isolation and fulfillment rules
+        shell: pwsh
+        run: ./scripts/verify-paddle-live-preflight.ps1
       - name: Verify anonymous download counter
         shell: pwsh
         run: ./scripts/verify-download-counter.ps1
