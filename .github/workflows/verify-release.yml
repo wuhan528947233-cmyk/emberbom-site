@@ -19,3 +19,6 @@ jobs:
       - name: Verify Paddle environment isolation and fulfillment rules
         shell: pwsh
         run: ./scripts/verify-paddle-live-preflight.ps1
+      - name: Verify anonymous download counter
+        shell: pwsh
+        run: ./scripts/verify-download-counter.ps1
