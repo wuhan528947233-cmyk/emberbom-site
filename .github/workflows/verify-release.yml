@@ -2,7 +2,7 @@ name: Verify public release integrity
 
 on:
   push:
-    branches: [main, codex/t054-privacy-download-counter]
+    branches: [main]
   pull_request:
 
 permissions:
