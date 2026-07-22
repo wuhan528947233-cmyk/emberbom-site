@@ -6,13 +6,15 @@ $ErrorActionPreference = "Stop"
 $repoRoot = Split-Path -Parent $PSScriptRoot
 $functionPath = Join-Path $repoRoot "functions/api/paddle-webhook.js"
 $corePath = Join-Path $repoRoot "functions/_lib/paddle-fulfillment.mjs"
+$runtimePath = Join-Path $repoRoot "functions/_lib/paddle-runtime.mjs"
+$configPath = Join-Path $repoRoot "functions/api/paddle-config.js"
 $schemaPath = Join-Path $repoRoot "migrations/0001_paddle_sandbox_fulfillment.sql"
 $routesPath = Join-Path $repoRoot "_routes.json"
 $indexPath = Join-Path $repoRoot "index.html"
 $sandboxPath = Join-Path $repoRoot "paddle-sandbox.js"
 $testPath = Join-Path $repoRoot "tests/paddle-fulfillment.test.mjs"
 
-foreach ($path in @($functionPath, $corePath, $schemaPath, $routesPath, $testPath)) {
+foreach ($path in @($functionPath, $corePath, $runtimePath, $configPath, $schemaPath, $routesPath, $testPath)) {
     if (-not (Test-Path -LiteralPath $path -PathType Leaf)) {
         throw "paddle_fulfillment_file_missing: $path"
     }
@@ -20,6 +22,7 @@ foreach ($path in @($functionPath, $corePath, $schemaPath, $routesPath, $testPat
 
 $function = Get-Content -LiteralPath $functionPath -Raw
 $core = Get-Content -LiteralPath $corePath -Raw
+$runtime = Get-Content -LiteralPath $runtimePath -Raw
 $schema = Get-Content -LiteralPath $schemaPath -Raw
 $routes = Get-Content -LiteralPath $routesPath -Raw
 $index = Get-Content -LiteralPath $indexPath -Raw
@@ -37,8 +40,8 @@ if ($allText -match '(?i)pdl_(?:sdbx|live)_apikey_[a-z0-9]+' -or
     $allText -match 'live_[a-zA-Z0-9]{27}') {
     throw "paddle_server_or_live_secret_detected"
 }
-foreach ($requiredBinding in @('PADDLE_WEBHOOK_SECRET', 'LICENSE_DB')) {
-    if ($function -notmatch [regex]::Escape($requiredBinding)) {
+foreach ($requiredBinding in @('PADDLE_WEBHOOK_SECRET', 'LICENSE_DB', 'PADDLE_PRODUCT_ID', 'PADDLE_PRICE_ID', 'PADDLE_ENVIRONMENT')) {
+    if (($function + "`n" + $runtime) -notmatch [regex]::Escape($requiredBinding)) {
         throw "paddle_fulfillment_binding_missing: $requiredBinding"
     }
 }
@@ -57,16 +60,12 @@ foreach ($requiredSecurity in @(
 if ($function -notmatch 'request\.method\s*!==\s*"POST"' -or $function -notmatch 'json\(405') {
     throw "paddle_fulfillment_post_only_missing"
 }
-$previewHost = 'codex-t053-paddle-sandbox-fu.emberbom-site.pages.dev'
-if ($function -notmatch [regex]::Escape('"' + $previewHost + '"')) {
-    throw "paddle_fulfillment_preview_host_missing"
-}
-foreach ($productionHost in @('emberbom.com', 'www.emberbom.com', 'emberbom-site.pages.dev')) {
-    if ($function -match [regex]::Escape('"' + $productionHost + '"')) {
-        throw "paddle_fulfillment_production_host_enabled: $productionHost"
+foreach ($hostRule in @('emberbom.com', 'emberbom-site.pages.dev', 'localhost', '127.0.0.1')) {
+    if ($runtime -notmatch [regex]::Escape($hostRule)) {
+        throw "paddle_fulfillment_host_rule_missing: $hostRule"
     }
 }
-if ($routes -notmatch [regex]::Escape('"include": ["/api/paddle-webhook"]')) {
+if ($routes -notmatch [regex]::Escape('/api/paddle-webhook') -or $routes -notmatch [regex]::Escape('/api/paddle-config')) {
     throw "paddle_fulfillment_route_not_isolated"
 }
 foreach ($table in @('processed_events', 'entitlements')) {
@@ -83,7 +82,7 @@ foreach ($requiredFrontend in @(
     'Legal organization name',
     'authorized to purchase for this legal organization',
     'licensee_name: licenseeName',
-    'offer_identifier: SANDBOX_CONFIG.offerIdentifier',
+    'offer_identifier: config.offerIdentifier',
     'customData,'
 )) {
     if (($index + "`n" + $sandbox) -notmatch [regex]::Escape($requiredFrontend)) {
@@ -102,4 +101,4 @@ if ($LASTEXITCODE -ne 0) {
     throw "paddle_fulfillment_tests_failed"
 }
 
-"PADDLE_SANDBOX_FULFILLMENT=PASS"
+"PADDLE_FULFILLMENT=PASS"

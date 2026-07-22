@@ -1,5 +1,5 @@
-export const EXPECTED_PRICE_ID = "pri_01kxw46v5y5m181arczqex1gw8";
-export const OFFER_IDENTIFIER = "emberbom_founding_team_v1";
+export { OFFER_IDENTIFIER } from "./paddle-runtime.mjs";
+import { OFFER_IDENTIFIER } from "./paddle-runtime.mjs";
 export const SIGNATURE_TOLERANCE_SECONDS = 5;
 
 const EVENT_ID = /^evt_[a-z\d]{26}$/;
@@ -114,7 +114,7 @@ function envelope(event) {
   };
 }
 
-function classifyTransaction(event, base) {
+function classifyTransaction(event, base, catalog) {
   const data = event.data && typeof event.data === "object" ? event.data : {};
   const items = Array.isArray(data.items) ? data.items : [];
   const item = items.length === 1 && items[0] && typeof items[0] === "object" ? items[0] : {};
@@ -136,7 +136,8 @@ function classifyTransaction(event, base) {
     data.subscription_id === null &&
     items.length === 1 &&
     item.quantity === 1 &&
-    priceId === EXPECTED_PRICE_ID &&
+    productId === catalog.productId &&
+    priceId === catalog.priceId &&
     price.billing_cycle === null &&
     licenseeName !== null &&
     offerIdentifier === OFFER_IDENTIFIER;
@@ -198,10 +199,10 @@ function classifyAdjustment(event, base) {
   return { ...common, kind: "review_adjustment" };
 }
 
-export function classifyFulfillmentEvent(event) {
+export function classifyFulfillmentEvent(event, catalog = {}) {
   const base = envelope(event);
   if (base.eventType === "transaction.completed") {
-    return classifyTransaction(event, base);
+    return classifyTransaction(event, base, catalog);
   }
   if (base.eventType === "adjustment.created" || base.eventType === "adjustment.updated") {
     return classifyAdjustment(event, base);

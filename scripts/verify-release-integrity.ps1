@@ -82,22 +82,24 @@ foreach ($pagePath in $pages) {
 
 $indexPath = Join-Path $repoRoot "index.html"
 $sandboxScriptPath = Join-Path $repoRoot "paddle-sandbox.js"
+$paddleRuntimePath = Join-Path $repoRoot "functions/_lib/paddle-runtime.mjs"
 $headersPath = Join-Path $repoRoot "_headers"
 $index = Get-Content -LiteralPath $indexPath -Raw
 $sandboxScript = Get-Content -LiteralPath $sandboxScriptPath -Raw
+$paddleRuntime = Get-Content -LiteralPath $paddleRuntimePath -Raw
 $headers = Get-Content -LiteralPath $headersPath -Raw
 $allPublicText = Get-ChildItem -LiteralPath $repoRoot -File -Recurse |
     Where-Object { $_.FullName -notmatch '[\\/]\.git[\\/]' -and $_.Extension -in @('.html', '.js', '.ps1', '.yml', '.yaml', '.txt', '.md') } |
     ForEach-Object { Get-Content -LiteralPath $_.FullName -Raw }
 $allPublicText = $allPublicText -join "`n"
 
-if ($sandboxScript -notmatch 'clientSideToken:\s*"test_[a-zA-Z0-9]{27}"') {
-    throw "paddle_sandbox_client_token_missing_or_invalid"
+if ($sandboxScript -notmatch [regex]::Escape('fetch("/api/paddle-config"') -or
+    $sandboxScript -match '(?:test|live)_[a-zA-Z0-9]{20,}' -or
+    $sandboxScript -match '(?:pri|pro)_[a-z0-9]{26}') {
+    throw "paddle_runtime_config_or_hardcoded_identifier_invalid"
 }
-if ($sandboxScript -notmatch 'priceId:\s*"pri_[a-z0-9]{26}"') {
-    throw "paddle_sandbox_price_id_missing_or_invalid"
-}
-if ($allPublicText -match '(?i)pdl_(?:sdbx|live)_apikey_|webhook[_ -]?secret\s*[:=]') {
+if ($allPublicText -match '(?i)pdl_(?:sdbx|live)_apikey_' -or
+    $allPublicText -match '(?i)PADDLE_WEBHOOK_SECRET\s*=\s*["''][^<\r\n]') {
     throw "paddle_server_secret_detected"
 }
 if ($allPublicText -match 'live_[a-zA-Z0-9]{27}') {
@@ -106,17 +108,10 @@ if ($allPublicText -match 'live_[a-zA-Z0-9]{27}') {
 if ($sandboxScript -notmatch 'quantity:\s*1' -or $sandboxScript -match 'quantity:\s*(?:[02-9]|[1-9][0-9]+)') {
     throw "paddle_checkout_quantity_not_fixed_to_one"
 }
-foreach ($productionHost in @('emberbom.com', 'www.emberbom.com', 'emberbom-site.pages.dev')) {
-    if ($sandboxScript -notmatch [regex]::Escape('"' + $productionHost + '"')) {
-        throw "paddle_production_host_guard_missing: $productionHost"
+foreach ($requiredHostRule in @('emberbom.com', 'emberbom-site.pages.dev', 'localhost', '127.0.0.1')) {
+    if (($sandboxScript + "`n" + $paddleRuntime) -notmatch [regex]::Escape($requiredHostRule)) {
+        throw "paddle_host_guard_missing: $requiredHostRule"
     }
-}
-$expectedPreviewHost = 'codex-t053-paddle-sandbox-fu.emberbom-site.pages.dev'
-if ($sandboxScript -notmatch [regex]::Escape('"' + $expectedPreviewHost + '"')) {
-    throw "paddle_exact_preview_host_missing"
-}
-if ($sandboxScript -match '\*\.pages\.dev' -or $sandboxScript -match 'endsWith\([^)]*pages\.dev') {
-    throw "paddle_pages_preview_guard_too_broad"
 }
 if ($index -notmatch [regex]::Escape('One-time purchase. Taxes may apply.')) {
     throw "paddle_tax_notice_missing"
@@ -132,7 +127,7 @@ foreach ($requiredCheckoutField in @(
 }
 foreach ($requiredCustomData in @(
     'licensee_name: licenseeName',
-    'offer_identifier: SANDBOX_CONFIG.offerIdentifier',
+    'offer_identifier: config.offerIdentifier',
     'customData,'
 )) {
     if ($sandboxScript -notmatch [regex]::Escape($requiredCustomData)) {
@@ -156,13 +151,15 @@ foreach ($requiredPaddleOrigin in @(
     'https://cdn.paddle.com',
     'https://sandbox-api.paddle.com',
     'https://sandbox-cdn.paddle.com',
-    'https://sandbox-buy.paddle.com'
+    'https://sandbox-buy.paddle.com',
+    'https://api.paddle.com',
+    'https://buy.paddle.com'
 )) {
     if ($headers -notmatch [regex]::Escape($requiredPaddleOrigin)) {
         throw "required_paddle_csp_origin_missing: $requiredPaddleOrigin"
     }
 }
-if ($headers -notmatch [regex]::Escape('payment=(self "https://sandbox-buy.paddle.com")')) {
+if ($headers -notmatch [regex]::Escape('payment=(self "https://sandbox-buy.paddle.com" "https://buy.paddle.com")')) {
     throw "paddle_payment_permission_not_minimally_scoped"
 }
 if ($headers -match '(?m)(?:^|;\s*)(?:script-src|connect-src|frame-src)\s+[^;]*\*' -or $headers -match "'unsafe-eval'") {
@@ -170,4 +167,4 @@ if ($headers -match '(?m)(?:^|;\s*)(?:script-src|connect-src|frame-src)\s+[^;]*\
 }
 
 "PUBLIC_RELEASE_INTEGRITY=PASS"
-"PADDLE_SANDBOX_INTEGRATION=PASS"
+"PADDLE_ENVIRONMENT_INTEGRATION=PASS"

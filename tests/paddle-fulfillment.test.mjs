@@ -5,7 +5,6 @@ import test from "node:test";
 import {
   INSERT_PROCESSED_EVENT_SQL,
   OFFER_IDENTIFIER,
-  EXPECTED_PRICE_ID,
   buildEntitlementMutation,
   classifyFulfillmentEvent,
   verifyPaddleSignature,
@@ -14,7 +13,8 @@ import {
 const SCHEMA = readFileSync(new URL("../migrations/0001_paddle_sandbox_fulfillment.sql", import.meta.url), "utf8");
 const SECRET = "sandbox-notification-secret-for-tests";
 const endpointSource = readFileSync(new URL("../functions/api/paddle-webhook.js", import.meta.url), "utf8")
-  .replace("../_lib/paddle-fulfillment.mjs", new URL("../functions/_lib/paddle-fulfillment.mjs", import.meta.url).href);
+  .replace("../_lib/paddle-fulfillment.mjs", new URL("../functions/_lib/paddle-fulfillment.mjs", import.meta.url).href)
+  .replace("../_lib/paddle-runtime.mjs", new URL("../functions/_lib/paddle-runtime.mjs", import.meta.url).href);
 const { onRequest } = await import(`data:text/javascript;base64,${Buffer.from(endpointSource).toString("base64")}`);
 const ids = {
   event: (character) => `evt_${character.repeat(26)}`,
@@ -23,6 +23,9 @@ const ids = {
   product: (character) => `pro_${character.repeat(26)}`,
   adjustment: (character) => `adj_${character.repeat(26)}`,
 };
+const EXPECTED_PRODUCT_ID = ids.product("p");
+const EXPECTED_PRICE_ID = `pri_${"p".repeat(26)}`;
+const CATALOG = { productId: EXPECTED_PRODUCT_ID, priceId: EXPECTED_PRICE_ID };
 
 function database() {
   const db = new DatabaseSync(":memory:");
@@ -81,6 +84,8 @@ function transactionEvent({
   transactionId = ids.transaction(transactionCharacter),
   occurredAt = "2026-07-19T10:00:00.000Z",
   licenseeName = "Example Robotics Ltd",
+  productId = EXPECTED_PRODUCT_ID,
+  priceId = EXPECTED_PRICE_ID,
 } = {}) {
   return {
     event_id: ids.event(eventCharacter),
@@ -101,8 +106,8 @@ function transactionEvent({
         {
           quantity: 1,
           price: {
-            id: EXPECTED_PRICE_ID,
-            product_id: ids.product(transactionCharacter),
+            id: priceId,
+            product_id: productId,
             billing_cycle: null,
           },
         },
@@ -149,7 +154,7 @@ function adjustmentEvent({
 }
 
 function apply(db, event, processedAt = "2026-07-19T12:00:00.000Z") {
-  const decision = classifyFulfillmentEvent(event);
+  const decision = classifyFulfillmentEvent(event, CATALOG);
   const duplicate = db.prepare("SELECT 1 FROM processed_events WHERE event_id = ?").get(decision.eventId);
   if (duplicate) {
     return "duplicate";
@@ -201,6 +206,17 @@ async function signedRequest(event, host = "codex-t053-paddle-sandbox-fu.emberbo
   });
 }
 
+function sandboxEnv(databaseValue) {
+  return {
+    PADDLE_ENVIRONMENT: "sandbox",
+    PADDLE_CLIENT_SIDE_TOKEN: `test_${"t".repeat(24)}`,
+    PADDLE_PRODUCT_ID: EXPECTED_PRODUCT_ID,
+    PADDLE_PRICE_ID: EXPECTED_PRICE_ID,
+    PADDLE_WEBHOOK_SECRET: SECRET,
+    LICENSE_DB: databaseValue,
+  };
+}
+
 test("accepts a current valid signature and rejects missing, wrong, and expired signatures", async () => {
   const now = Date.UTC(2026, 6, 19, 10, 0, 0);
   const timestamp = String(now / 1000);
@@ -214,12 +230,21 @@ test("accepts a current valid signature and rejects missing, wrong, and expired 
 
 test("Pages endpoint rejects unsigned requests without writing to D1", async () => {
   const d1 = new FakeD1();
-  const response = await onRequest({
+  let response = await onRequest({
     request: new Request("https://codex-t053-paddle-sandbox-fu.emberbom-site.pages.dev/api/paddle-webhook", {
       method: "POST",
       body: JSON.stringify(transactionEvent()),
     }),
-    env: { PADDLE_WEBHOOK_SECRET: SECRET, LICENSE_DB: d1 },
+    env: sandboxEnv(d1),
+  });
+  assert.equal(response.status, 401);
+  response = await onRequest({
+    request: new Request("https://codex-t053-paddle-sandbox-fu.emberbom-site.pages.dev/api/paddle-webhook", {
+      method: "POST",
+      headers: { "Paddle-Signature": `ts=${Math.floor(Date.now() / 1000)};h1=${"0".repeat(64)}` },
+      body: JSON.stringify(transactionEvent()),
+    }),
+    env: sandboxEnv(d1),
   });
   assert.equal(response.status, 401);
   assert.equal(d1.db.prepare("SELECT COUNT(*) AS count FROM processed_events").get().count, 0);
@@ -239,7 +264,7 @@ test("Pages endpoint reports configuration failure without configuration probes"
 
   response = await onRequest({
     request: request(),
-    env: { PADDLE_WEBHOOK_SECRET: SECRET, LICENSE_DB: {} },
+    env: sandboxEnv({}),
   });
   assert.equal(response.status, 503);
   assert.deepEqual(await response.json(), {
@@ -249,7 +274,7 @@ test("Pages endpoint reports configuration failure without configuration probes"
 
   response = await onRequest({
     request: request(),
-    env: { LICENSE_DB: new FakeD1() },
+    env: { ...sandboxEnv(new FakeD1()), PADDLE_WEBHOOK_SECRET: undefined },
   });
   assert.equal(response.status, 503);
   assert.deepEqual(await response.json(), {
@@ -270,7 +295,7 @@ test("Pages endpoint accepts a signed event once and rejects production hosts", 
   const event = transactionEvent();
   let response = await onRequest({
     request: await signedRequest(event),
-    env: { PADDLE_WEBHOOK_SECRET: SECRET, LICENSE_DB: d1 },
+    env: sandboxEnv(d1),
   });
   assert.equal(response.status, 200);
   assert.equal((await response.json()).result, "processed");
@@ -278,14 +303,19 @@ test("Pages endpoint accepts a signed event once and rejects production hosts", 
 
   response = await onRequest({
     request: await signedRequest(event),
-    env: { PADDLE_WEBHOOK_SECRET: SECRET, LICENSE_DB: d1 },
+    env: sandboxEnv(d1),
   });
   assert.equal((await response.json()).result, "duplicate");
 
   const productionDb = new FakeD1();
   response = await onRequest({
     request: await signedRequest(event, "emberbom.com"),
-    env: { PADDLE_WEBHOOK_SECRET: SECRET, LICENSE_DB: productionDb },
+    env: {
+      ...sandboxEnv(productionDb),
+      PADDLE_ENVIRONMENT: "live",
+      PADDLE_CLIENT_SIDE_TOKEN: `live_${"l".repeat(24)}`,
+      PADDLE_LIVE_CHECKOUT_ENABLED: "false",
+    },
   });
   assert.equal(response.status, 404);
   assert.equal(productionDb.db.prepare("SELECT COUNT(*) AS count FROM processed_events").get().count, 0);
@@ -323,6 +353,7 @@ test("missing licensee metadata is review_required rather than active", () => {
 
 test("catalog, quantity, offer, collection, and subscription mismatches never grant active", () => {
   const mutations = [
+    (event) => { event.data.items[0].price.product_id = ids.product("z"); },
     (event) => { event.data.items[0].price.id = `pri_${"z".repeat(26)}`; },
     (event) => { event.data.items[0].quantity = 2; },
     (event) => { event.data.custom_data.offer_identifier = "wrong_offer"; },
@@ -392,7 +423,7 @@ test("real Paddle single-item full refund revokes when top-level type is partial
     transactionId,
     occurredAt: "2026-07-19T07:00:00.000Z",
   }));
-  assert.equal(classifyFulfillmentEvent(adjustment).kind, "revoke");
+  assert.equal(classifyFulfillmentEvent(adjustment, CATALOG).kind, "revoke");
   apply(db, adjustment);
   const row = db.prepare("SELECT status, last_adjustment_id FROM entitlements").get();
   assert.equal(row.status, "revoked");

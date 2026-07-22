@@ -4,12 +4,7 @@ import {
   classifyFulfillmentEvent,
   verifyPaddleSignature,
 } from "../_lib/paddle-fulfillment.mjs";
-
-const ALLOWED_SANDBOX_HOSTS = new Set([
-  "localhost",
-  "127.0.0.1",
-  "codex-t053-paddle-sandbox-fu.emberbom-site.pages.dev",
-]);
+import { resolvePaddleWebhookRuntime } from "../_lib/paddle-runtime.mjs";
 const MAX_BODY_BYTES = 262144;
 
 function json(status, body) {
@@ -66,18 +61,14 @@ export async function onRequest(context) {
     return json(405, { ok: false, error: "method_not_allowed" });
   }
 
-  const hostname = new URL(request.url).hostname.toLowerCase();
-  if (!ALLOWED_SANDBOX_HOSTS.has(hostname)) {
+  const runtime = resolvePaddleWebhookRuntime(new URL(request.url).hostname, env);
+  if (runtime.status === "not_found" || runtime.status === "disabled") {
     return json(404, { ok: false, error: "not_found" });
   }
-  if (
-    !env.PADDLE_WEBHOOK_SECRET ||
-    !env.LICENSE_DB ||
-    typeof env.LICENSE_DB.prepare !== "function"
-  ) {
+  if (runtime.status !== "ready") {
     return json(503, {
       ok: false,
-      error: "sandbox_fulfillment_not_configured",
+      error: `${runtime.environment || "paddle"}_fulfillment_not_configured`,
     });
   }
 
@@ -93,7 +84,7 @@ export async function onRequest(context) {
   const signatureValid = await verifyPaddleSignature(
     rawBody,
     request.headers.get("Paddle-Signature"),
-    env.PADDLE_WEBHOOK_SECRET
+    runtime.webhookSecret
   );
   if (!signatureValid) {
     return json(401, { ok: false, error: "invalid_signature" });
@@ -101,13 +92,16 @@ export async function onRequest(context) {
 
   let decision;
   try {
-    decision = classifyFulfillmentEvent(JSON.parse(rawBody));
+    decision = classifyFulfillmentEvent(JSON.parse(rawBody), {
+      productId: runtime.productId,
+      priceId: runtime.priceId,
+    });
   } catch {
     return json(400, { ok: false, error: "invalid_event" });
   }
 
   try {
-    const result = await persistEvent(env.LICENSE_DB, decision, new Date().toISOString());
+    const result = await persistEvent(runtime.database, decision, new Date().toISOString());
     return json(200, { ok: true, result });
   } catch {
     return json(500, { ok: false, error: "processing_failed" });

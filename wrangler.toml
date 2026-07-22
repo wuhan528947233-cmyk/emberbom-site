@@ -4,6 +4,19 @@ compatibility_date = "2026-07-18"
 
 [env.production]
 
+[env.production.vars]
+PADDLE_ENVIRONMENT = "live"
+PADDLE_LIVE_CHECKOUT_ENABLED = "false"
+
+[[env.production.d1_databases]]
+binding = "LICENSE_DB"
+database_name = "emberbom-licenses-production"
+database_id = "42f2b649-641c-4a95-8aba-db260738083d"
+
+[env.preview.vars]
+PADDLE_ENVIRONMENT = "sandbox"
+PADDLE_LIVE_CHECKOUT_ENABLED = "false"
+
 [[env.preview.d1_databases]]
 binding = "LICENSE_DB"
 database_name = "emberbom-licenses-sandbox"
