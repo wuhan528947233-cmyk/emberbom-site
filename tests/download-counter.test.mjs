@@ -153,6 +153,11 @@ test("download buttons use stable counter routes and remain normal keyboard-oper
   }
 });
 
+test("Pages Function routing includes the stable download entry points", () => {
+  const routes = JSON.parse(readFileSync(new URL("../_routes.json", import.meta.url), "utf8"));
+  assert.ok(routes.include.includes("/download/*"));
+});
+
 test("privacy policy accurately describes aggregate counting and excluded personal data", () => {
   const privacy = readFileSync(new URL("../privacy.html", import.meta.url), "utf8");
   assert.match(privacy, /records aggregate download request counts by date and operating system/);
